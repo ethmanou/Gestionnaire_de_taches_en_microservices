@@ -34,15 +34,19 @@ namespace TaskService.Controllers
 
         // POST api/Tasks
         [HttpPost]
-        public void CreateTask(TaskCreate task)
+        public ActionResult<Entities.Task> CreateTask(TaskCreate task)
         {
             var index = _taskIndex++;
-            _tasks.Add(new Entities.Task
+            var newTask = new Entities.Task
             {
                 Id = index,
                 IsDone = task.IsDone,
                 Text = task.Text
-            });
+            };
+            _tasks.Add(newTask);
+
+            // Return a 201 Created response with the newly created task
+            return CreatedAtAction("Get", new { id = newTask.Id }, newTask);
         }
 
         // PUT api/Tasks/5
@@ -56,6 +60,7 @@ namespace TaskService.Controllers
             }
             task.Text = taskUpdate.Text;
             task.IsDone = taskUpdate.IsDone;
+            
 
             return Ok(task);
         }

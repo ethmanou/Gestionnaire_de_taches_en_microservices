@@ -95,11 +95,12 @@ namespace UserService.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> CreateUser(UserCreateModel userPayload)
         {
-            var user = await _context.User.FirstOrDefaultAsync(u =>u.Email == userPayload.Email);
+            var user = await _context.User.FirstOrDefaultAsync(u => u.Email == userPayload.Email);
 
             if (user != null)
             {
-                return BadRequest("utilisateur exist");
+                 
+                return BadRequest("utilisateur exist!");
             }
             else{
                 user = new User
@@ -113,7 +114,8 @@ namespace UserService.Controllers
                 _context.User.Add(user);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetUser", new { id = user.Id }, user);
+                CreatedAtAction("GetUser", new { id = user.Id }, user);
+                return Ok(user);
             }
         }
 

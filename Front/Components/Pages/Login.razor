@@ -8,10 +8,16 @@
     <InputText @bind-Value="loginModel.Username" />
     <InputText @bind-Value="loginModel.Password" type="password" />
     <button type="submit">Login</button>
+
+    @if (!loginSuccess)
+    {
+        <p style="color: red;">Login Failed</p>
+    }
 </EditForm>
 
 @code {
     private LoginModel loginModel = new LoginModel();
+    private bool loginSuccess = true;
 
 
     private async Task HandleLogin()
@@ -19,13 +25,14 @@
         var user = await loginService.AuthenticateUser(loginModel.Username, loginModel.Password);
         if (user != null)
         {
-            var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
+            //var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
 
             NavigationManager.NavigateTo("/");
         }
         else
         {
-            //NavigationManager.NavigateTo("/Error.razor");
+            loginSuccess = false;
+            //NavigationManager.NavigateTo("/Error");
         }
     }
 

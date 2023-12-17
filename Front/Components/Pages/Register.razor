@@ -3,11 +3,30 @@
 @inject NavigationManager NavigationManager
 @inject RegisterService RegisterService
 @inject AuthenticationStateProvider authStateProvider
-
+@using Front.Entities
 <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
-    <InputText @bind-Value="registerModel.Username" />
-    <InputText @bind-Value="registerModel.Password" type="password" />
-    <InputText @bind-Value="registerModel.Email" type="email" />
+    <DataAnnotationsValidator />
+    
+
+    <label for="Name">UserName</label>
+    <InputText @bind-Value="registerModel.Name" id="Name" />
+    <div class="error-message">
+    <!--<ValidationMessage For="@(() => registerModel.Name)" />!-->
+    </div>
+
+    <label for="Pass">password</label>
+    <InputText @bind-Value="registerModel.Pass" type="password" id="Pass" />
+    <div class="error-message">
+    
+    </div>
+
+    <label for="Email">E-mail:</label>
+    <InputText @bind-Value="registerModel.Email" type="email" id="Email" />
+    <div class="error-message">
+    </div>
+
+    <ValidationSummary />
+
     <button type="submit">Register</button>
 </EditForm>
 
@@ -17,23 +36,27 @@
 
     private async void HandleRegister()
     {
-        var user = RegisterService.RegisterUser(registerModel.Username, registerModel.Password);
+        var user = await RegisterService.RegisterUser(registerModel.Name, registerModel.Pass , registerModel.Email);
         if (user != null)
         {
-            var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
-
-            NavigationManager.NavigateTo("/");
+            
+            NavigationManager.NavigateTo("/register_success");
         }
         else
         {
-            // Handle failed authentication
+            NavigationManager.NavigateTo("/register_faild");
         }
     }
 
     private class RegisterModel
     {
-        public string Username { get; set; } = "";
-        public string Password { get; set; } = "";
-        public string Email    {get ; set; } = "";
+         [Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
+        public string Name { get; set; } = "";
+
+        [Alphanumeric(ErrorMessage = "Password doit être alphanumérique.")]
+        public string Pass { get; set; } = "";
+
+        [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
+        public string Email { get; set; } = "";
     }
 }
