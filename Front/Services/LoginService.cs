@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Front.Services ; 
 
 
+
 namespace Front.Services
 {
     public class LoginService
@@ -25,7 +26,9 @@ namespace Front.Services
             
             string gatewayUrl = "http://localhost:5000/"; 
             string loginRoute = "api/User/login"; 
+            string GetToken = "api/User/Create" ;
             string apiUrl = $"{gatewayUrl}{loginRoute}";
+            string apiUrl_token = $"{gatewayUrl}{GetToken}";
 
             // Construisez les données JSON pour la requête POST
             var postData = new { Name = username, Pass = password };
@@ -34,6 +37,14 @@ namespace Front.Services
             try
                 {
                     HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
+                    HttpResponseMessage token_r = await _httpClient.GetFromJsonAsync<>(apiUrl_token);
+
+                    if(token_r.IsSuccessStatusCode){
+                        string token = await token_r.Content.ReadAsStringAsync();
+                    }
+                    else{
+                        string token = "";
+                    }
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -54,6 +65,8 @@ namespace Front.Services
                 }
 
         }
+
+            
         
     }
 }
