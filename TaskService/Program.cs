@@ -1,6 +1,13 @@
 ﻿using TaskService.Controllers;
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using TaskService.Data;
+using TaskService.Entities;
 
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<TaskServiceContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TaskServiceContext") ?? throw new InvalidOperationException("Connection string 'TaskServiceContext' not found.")));
 // Add services to the container.
 
 builder.Services.AddControllers();

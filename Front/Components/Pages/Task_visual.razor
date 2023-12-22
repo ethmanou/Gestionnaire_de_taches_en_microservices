@@ -6,57 +6,44 @@
 @using Front.Entities
 @inject TaskService TaskService
 
-<EditForm Model="@task" OnValidSubmit="HandleCreate">
-    <InputText @bind-Value="task.Text" />
-    <InputCheckbox @bind-Value="task.IsDone" />
-    <button type="submit">Create</button>
-</EditForm>
-
 <h3>Liste des tâches</h3>
 
-<ul>
-    @if (tasks != null)
-    {
-        @foreach (var task in tasks)
+<button @onclick="HandleGet">Obtenir les tâches</button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Validation</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (tasks != null)
         {
-            <li>@task?.Id</li>
-        }
-    }
-    else
-    {
-        <p>Aucune tâche disponible pour le moment.</p>
-    }
-</ul>
-
-
-
-@code {
-    private List<TaskModel> tasks;
-    private TaskCreate task = new TaskCreate();
-
-    
-
-     private async void HandleCreate()
-    {
-        var user = await TaskService.CreateTask(task.Text , task.IsDone);
-        if (user != null)
-        {
-            //var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
-
-            NavigationManager.NavigateTo("/");
+            @foreach (var task in tasks)
+            {
+                <tr>
+                    <td>@task?.Id</td>
+                    <td>@task?.Text</td>
+                    <td>@task?.IsDone.ToString()</td>
+                </tr>
+            }
         }
         else
         {
-            NavigationManager.NavigateTo("/Error");
+            <tr>
+                <td colspan="3">Aucune tâche disponible pour le moment.</td>
+            </tr>
         }
-    }
+    </tbody>
+</table>
 
-    public class TaskCreate
+@code {
+    private List<TaskModel> tasks;
+
+    private async Task HandleGet()
     {
-        public string Text { get; set; }
-        public bool IsDone { get; set; }
+        tasks = await TaskService.GetTasksAsync();
     }
-
 }
-
-

@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TaskService.Data;
 using TaskService.Entities;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace TaskService.Controllers
 {
@@ -9,73 +12,95 @@ namespace TaskService.Controllers
     [ApiController]
     public class TasksController : ControllerBase
     {
+        private readonly TaskServiceContext _context;
 
-        private List<Entities.Task> _tasks;
-        private int _taskIndex = 0;
-
-        public TasksController()
+        public TasksController(TaskServiceContext context)
         {
-            _tasks = new List<Entities.Task>();
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         // GET: api/Tasks
         [HttpGet]
-        public IEnumerable<Entities.Task> Get()
+        public async Task<IEnumerable<Tasks>> Get()
         {
-            return _tasks;
+            return await _context.Tasks
+                .Select(task => TaskToTasks(task))
+                .ToListAsync();
         }
 
         // GET api/Tasks/5
         [HttpGet("{id}")]
-        public Entities.Task? Get(int id)
+        public async Task<ActionResult<Tasks>> Get(int id)
         {
-            return _tasks.Find(t => t.Id == id);
+            var task = await _context.Tasks.FindAsync(id);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            return TaskToTasks(task);
         }
 
         // POST api/Tasks
         [HttpPost]
-        public ActionResult<Entities.Task> CreateTask(TaskCreate task)
+        public async Task<ActionResult<Tasks>> CreateTask(TaskCreate task)
         {
-            var index = _taskIndex++;
-            var newTask = new Entities.Task
+            var newTask = new Tasks
             {
-                Id = index,
-                IsDone = task.IsDone,
-                Text = task.Text
+                Text = task.Text,
+                IsDone = task.IsDone
             };
-            _tasks.Add(newTask);
+
+            _context.Tasks.Add(newTask);
+            await _context.SaveChangesAsync();
 
             // Return a 201 Created response with the newly created task
-            return CreatedAtAction("Get", new { id = newTask.Id }, newTask);
+            return CreatedAtAction(nameof(Get), new { id = newTask.Id }, TaskToTasks(newTask));
         }
 
         // PUT api/Tasks/5
         [HttpPut("{id}")]
-        public ActionResult<Entities.Task> Put(int id, TaskCreate taskUpdate)
+        public async Task<IActionResult> Put(int id, TaskCreate taskUpdate)
         {
-            var task = _tasks.Find(t => t.Id == id);
-            if(task == null)
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null)
             {
                 return NotFound();
             }
+
             task.Text = taskUpdate.Text;
             task.IsDone = taskUpdate.IsDone;
-            
 
-            return Ok(task);
+            await _context.SaveChangesAsync();
+
+            return Ok(TaskToTasks(task));
         }
 
         // DELETE api/Tasks/5
         [HttpDelete("{id}")]
-        public ActionResult<bool> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var index = _tasks.FindIndex(t => t.Id == id);
-            if(index == -1)
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null)
             {
                 return NotFound();
             }
-            _tasks.RemoveAt(index);
+
+            _context.Tasks.Remove(task);
+            await _context.SaveChangesAsync();
+
             return Ok(true);
+        }
+
+        private static Tasks TaskToTasks(Tasks task)
+        {
+            return new Tasks
+            {
+                Id = task.Id,
+                Text = task.Text,
+                IsDone = task.IsDone
+            };
         }
     }
 }

@@ -1,0 +1,44 @@
+<!-- TaskList.razor -->
+@page "/Create_task"
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
+@using Front.Entities
+@inject TaskService TaskService
+
+<EditForm Model="@task" OnValidSubmit="HandleCreate">
+    <InputText @bind-Value="task.Text" />
+     <label for="isDone">Is Done:</label>
+    <InputCheckbox id="isDone" @bind-Value="task.IsDone" />
+    <button type="submit">Create</button>
+</EditForm>
+
+
+
+
+@code {
+    private TaskCreate task = new TaskCreate();
+
+
+     private async void HandleCreate()
+    {
+        var user = await TaskService.CreateTask(task.Text , task.IsDone);
+        if (user != null)
+        {
+            NavigationManager.NavigateTo("/Task_visual");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Error");
+        }
+    }
+
+    public class TaskCreate
+    {
+        public string Text { get; set; }
+        public bool IsDone { get; set; }
+    }
+
+}
+
+

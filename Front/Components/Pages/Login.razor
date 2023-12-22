@@ -25,7 +25,7 @@
         var user = await loginService.AuthenticateUser(loginModel.Username, loginModel.Password);
         if (user != null)
         {
-            //var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
+            var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
 
             NavigationManager.NavigateTo("/");
         }

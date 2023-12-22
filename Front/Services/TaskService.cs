@@ -27,13 +27,13 @@ public class TaskService
         return await _httpClient.GetFromJsonAsync<List<TaskModel>>("http://localhost:5000/api/User/tasks");
     }
 
-    public async Task<string> CreateTask(string text , bool Bool){
+    public async Task<string> CreateTask(string text , bool valid ){
             string gatewayUrl = "http://localhost:5000/"; 
             string loginRoute = "api/User/task"; 
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
             // Construisez les données JSON pour la requête POST
-            var postData = new { Text = text , IsDone = Bool  };
+            var postData = new {  Text = text , IsDone = valid };
             var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
 
             

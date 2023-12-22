@@ -118,7 +118,7 @@ namespace GatewayService.Controllers
 
 
                 // Check if the response status code is 201 (Created)
-                if (response.StatusCode == HttpStatusCode.OK)
+                if (response.StatusCode == HttpStatusCode.Created)
                 {
                     // You can deserialize the response content here if needed
                     //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
