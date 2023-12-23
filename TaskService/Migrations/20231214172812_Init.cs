@@ -18,6 +18,7 @@ namespace TaskService.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Text = table.Column<string>(type: "TEXT", nullable: false),
                     IsDone = table.Column<bool>(type: "INTEGRE", nullable: false),
+                    IdUser = table.Column<int>(type: "INTEGRE", nullable: false),
                 },
                 constraints: table =>
                 {

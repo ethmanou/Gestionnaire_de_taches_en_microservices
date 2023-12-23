@@ -10,22 +10,15 @@ namespace TaskService.Entities
         public string Text { get; set; }
 
         public bool IsDone { get; set; }
-        public override string ToString()
-        {
-            return $"Id: ${Id} Text: ${Text}";
-        }
+
+        public int IdUser  {get; set; }
 
     }
     public class TaskCreate
     {
         public string Text { get; set; }
         public bool IsDone { get; set; }
-    }
+        //public int IdUser  {get; set;}
 
-    public class TaskItem
-    {
-        public int Id { get; set; }
-
-        public string Text { get; set; }
     }
 }

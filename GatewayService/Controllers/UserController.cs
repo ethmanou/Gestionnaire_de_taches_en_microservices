@@ -10,8 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 
 
-
-
 namespace GatewayService.Controllers
 {
     
@@ -35,34 +33,31 @@ namespace GatewayService.Controllers
         public async Task<IActionResult> Login(UserLogin model)
         {
             
+            
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
             {
+                
                 // Set the base address of the API you want to call
                 client.BaseAddress = new System.Uri("http://localhost:5001/");
 
                 // Send a POST request to the login endpoint
-                HttpResponseMessage response = await client.PostAsJsonAsync("api/Users/login", model);
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/Users/login/", model);
 
                 // Check if the response status code is 200 (OK)
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     // You can deserialize the response content here if needed
-                    var result = await response.Content.ReadFromJsonAsync<UserDTO>();
+                    var user = await response.Content.ReadFromJsonAsync<UserDTO>();
+                    string token_u = GenerateJwtToken(user.Id);
+                    var result = new {user = user , token = token_u};
                     return Ok(result);
                 }
                 else
                 {
-                
                     return BadRequest("Login failed");
                 }
             }
-        }
-        // api/User/test
-        [HttpGet("token/{id}")]
-        public async Task<IActionResult> Token_Jwt(int id)
-        {
-                return Ok(GenerateJwtToken(id));
         }
 
         
@@ -94,9 +89,12 @@ namespace GatewayService.Controllers
         }
          // api/User/tasks
          [Authorize]
-        [HttpGet("tasks")]
-        public async Task<ActionResult> GetTasks()
+        [HttpGet("tasks/{iduser}")]
+        public async Task<ActionResult> GetTasks(int iduser)
         {
+            var UserId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            // on vérifie qu'elle existe bien
+            if (UserId == null) return Unauthorized();
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
             {
@@ -104,7 +102,7 @@ namespace GatewayService.Controllers
                 client.BaseAddress = new System.Uri("http://localhost:5002/");
 
                 // Send a POST request to the login endpoint
-                var response = await client.GetFromJsonAsync<List<TaskModel>>("api/tasks/");
+                var response = await client.GetFromJsonAsync<List<TaskModel>>($"api/tasks/{iduser}");
 
 
                 // Check if the response status code is 201 (Created)
@@ -125,8 +123,8 @@ namespace GatewayService.Controllers
 
          // api/User/task
          [Authorize]
-        [HttpPost("task")]
-        public async Task<ActionResult> GetTasks(TaskCreate task)
+        [HttpPost("task/{iduser}")]
+        public async Task<ActionResult> GetTasks(TaskCreate task , int iduser)
         {
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
@@ -136,11 +134,11 @@ namespace GatewayService.Controllers
 
 
                 // Send a POST request to the login endpoint
-                HttpResponseMessage response = await client.PostAsJsonAsync("api/tasks/" , task);
+                HttpResponseMessage response = await client.PostAsJsonAsync($"api/tasks/{iduser}" , task);
 
 
                 // Check if the response status code is 201 (Created)
-                if (response.StatusCode == HttpStatusCode.Created)
+                if (response.StatusCode == HttpStatusCode.NoContent)
                 {
                     // You can deserialize the response content here if needed
                     //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();

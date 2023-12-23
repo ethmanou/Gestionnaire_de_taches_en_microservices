@@ -20,17 +20,17 @@ namespace TaskService.Controllers
         }
 
         // GET: api/Tasks
-        [HttpGet]
-        public async Task<IEnumerable<Tasks>> Get()
+        [HttpGet("{iduser}")]
+        public async Task<IEnumerable<Tasks>> Get(int iduser)
         {
-            return await _context.Tasks
-                .Select(task => TaskToTasks(task))
-                .ToListAsync();
+             return await _context.Tasks
+                        .Where(task => task.IdUser == iduser)
+                        .ToListAsync();
         }
 
         // GET api/Tasks/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Tasks>> Get(int id)
+        /*[HttpGet("{id}")]
+        public async Task<ActionResult<Tasks>> Get(int id , int iduser)
         {
             var task = await _context.Tasks.FindAsync(id);
 
@@ -40,23 +40,25 @@ namespace TaskService.Controllers
             }
 
             return TaskToTasks(task);
-        }
+        }*/
 
         // POST api/Tasks
-        [HttpPost]
-        public async Task<ActionResult<Tasks>> CreateTask(TaskCreate task)
+        [HttpPost("{iduser}")]
+        public async Task<ActionResult<Tasks>> CreateTask(TaskCreate task , int iduser)
         {
             var newTask = new Tasks
             {
                 Text = task.Text,
-                IsDone = task.IsDone
+                IsDone = task.IsDone,
             };
+
+            newTask.IdUser = iduser;
 
             _context.Tasks.Add(newTask);
             await _context.SaveChangesAsync();
 
             // Return a 201 Created response with the newly created task
-            return CreatedAtAction(nameof(Get), new { id = newTask.Id }, TaskToTasks(newTask));
+            return Created();
         }
 
         // PUT api/Tasks/5
@@ -71,10 +73,11 @@ namespace TaskService.Controllers
 
             task.Text = taskUpdate.Text;
             task.IsDone = taskUpdate.IsDone;
+            //task.IdUser = taskUpdate.IdUser;
 
             await _context.SaveChangesAsync();
 
-            return Ok(TaskToTasks(task));
+            return Ok(task);
         }
 
         // DELETE api/Tasks/5
@@ -93,14 +96,6 @@ namespace TaskService.Controllers
             return Ok(true);
         }
 
-        private static Tasks TaskToTasks(Tasks task)
-        {
-            return new Tasks
-            {
-                Id = task.Id,
-                Text = task.Text,
-                IsDone = task.IsDone
-            };
-        }
+        
     }
 }

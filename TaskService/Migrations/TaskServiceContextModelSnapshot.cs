@@ -28,6 +28,9 @@ namespace TaskService.Migrations
                     b.Property<bool>("IsDone")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("IdUser")
+                        .HasColumnType("INTEGER");
+
 
                     b.HasKey("Id");
 

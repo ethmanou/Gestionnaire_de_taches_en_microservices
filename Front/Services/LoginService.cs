@@ -26,9 +26,7 @@ namespace Front.Services
             
             string gatewayUrl = "http://localhost:5000/"; 
             string loginRoute = "api/User/login"; 
-            string GetToken = "api/User/Create" ;
             string apiUrl = $"{gatewayUrl}{loginRoute}";
-            string apiUrl_token = $"{gatewayUrl}{GetToken}";
 
             // Construisez les données JSON pour la requête POST
             var postData = new { Name = username, Pass = password };
@@ -37,19 +35,14 @@ namespace Front.Services
             try
                 {
                     HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
-                    HttpResponseMessage token_r = await _httpClient.GetFromJsonAsync<>(apiUrl_token);
-
-                    if(token_r.IsSuccessStatusCode){
-                        string token = await token_r.Content.ReadAsStringAsync();
-                    }
-                    else{
-                        string token = "";
-                    }
 
                     if (response.IsSuccessStatusCode)
                     {
-                        UserDTO user = await response.Content.ReadFromJsonAsync<UserDTO>();
-                        return user;
+                        var resultat = await response.Content.ReadFromJsonAsync<response_t>();
+                        string cheminFichier = "poken.txt";
+                        string lineToAdd = $"{resultat.user.Id}:{resultat.token}";
+                        File.WriteAllText(cheminFichier, $"{lineToAdd}\n");
+                        return resultat.user;
                     }
                     else
                     {

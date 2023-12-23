@@ -33,6 +33,10 @@ namespace TaskService.Migrations
                         .IsRequired()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("IdUser")
+                        .IsRequired()
+                        .HasColumnType("INTEGER");
+
                     
 
                     b.HasKey("Id");

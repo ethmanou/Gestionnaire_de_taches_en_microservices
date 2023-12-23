@@ -33,6 +33,12 @@ namespace UserService.Entities
     {
         public string Text { get; set; }
         public bool IsDone { get; set; }
+        public int IdUser  { get; set; }
+    }
+    public class response_t
+    {
+        public UserDTO user {get; set;}
+        public string token {get; set;}
     }
 
 
