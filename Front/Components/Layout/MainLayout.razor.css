@@ -36,6 +36,14 @@ main {
         text-overflow: ellipsis;
     }
 
+
+.page2{
+    width: 5000px;
+    height: 500vh;
+    color: #f7f7f7;
+
+}
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
