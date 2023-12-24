@@ -5,10 +5,14 @@
 @inject AuthenticationStateProvider authStateProvider
 @using Front.Entities
 @inject TaskService TaskService
+@inherits Microsoft.AspNetCore.Components.ComponentBase
+@inject IJSRuntime JSRuntime
+
 
 <h3>Liste des tâches</h3>
 
-<button @onclick="HandleGet">Obtenir les tâches</button>
+
+
 
 <table class="table">
     <thead>
@@ -21,13 +25,58 @@
     <tbody>
         @if (tasks != null)
         {
+            var index = 0;
             @foreach (var task in tasks)
             {
+                var currentIndex = index; 
+                
                 <tr>
-                    <td>@task?.Id</td>
-                    <td>@task?.Text</td>
-                    <td>@task?.IsDone.ToString()</td>
+                    <td>@index</td>
+                    @if(table_updated[index])
+                    {
+                        <td>@task?.Text</td>
+                        <td>
+                            @if (task.IsDone)
+                            {
+                                <span class="text-success">
+                                    <i class="bi bi-check-circle">done</i>
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-warning">
+                                    <i class="bi bi-exclamation-circle">not done</i>
+                                </span>
+                            }
+                        </td>
+                    }
+                    else{
+                    <td>
+                        <input @bind="@task.Text" disabled="@table_updated[index]" />
+                        <InputCheckbox @bind-Value="task.IsDone" disabled = "@table_updated[index]" />
+                    </td>
+                    }
+                    <td>
+                        @if (!table_updated[index])
+                        {
+                            <button @onclick="(() => HandleSave(task , currentIndex))">save </button>
+                        }
+                        else{
+                            <button @onclick="(() => HandleUpdate(currentIndex))">Met à jour </button>
+                            <button @onclick="(() => ShowOptionDelete(currentIndex))">Delete</button>
+                        }
+                        @if (table_deleted[index])
+                            {
+                                <div>
+                                    <p>Voulez-vous vraiment supprimer cette tâche?</p>
+                                    <button @onclick="(() => HandleDelete(task.Id))">Oui</button>
+                                    <button @onclick="(() => CancelDelete(currentIndex))">Annuler</button>
+                                </div>
+                            }
+                        
+                    </td>
                 </tr>
+                index++;
             }
         }
         else
@@ -40,10 +89,54 @@
 </table>
 
 @code {
+    private bool[] table_deleted;
+    private bool[] table_updated;
+
     private List<TaskModel> tasks;
 
-    private async Task HandleGet()
+    protected override async Task OnInitializedAsync()
     {
         tasks = await TaskService.GetTasksAsync();
+        table_updated = new bool[tasks.Count+1] ;
+        for(int i=0 ; i<tasks.Count ; i++){
+            table_updated[i] = true;
+        }
+        table_deleted = new bool[tasks.Count+1] ;
+        for(int i=0 ; i<tasks.Count ; i++){
+            table_deleted[i] = false;
+        }
+    }
+
+
+    private void ShowOptionDelete(int indx)
+        {
+            table_deleted[indx] = true;
+        }
+
+    private void CancelDelete(int indx)
+        {
+            table_deleted[indx] = false;
+        }
+
+
+    
+    private async Task HandleDelete(int id)
+    {
+        
+        var resultat = await TaskService.DeleteTaskAsync(id);
+        tasks = await TaskService.GetTasksAsync();
+
+        
+
+    }
+
+    private async Task HandleUpdate(int indx){
+        table_updated[indx] = false;
+    }
+    private async Task HandleSave(TaskModel task , int indx){
+        var resultat = await TaskService.UpdateTaskAsync(task.Id , task.Text , task.IsDone);
+        table_updated[indx] = true;
     }
 }
+
+

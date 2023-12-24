@@ -62,10 +62,11 @@ namespace TaskService.Controllers
         }
 
         // PUT api/Tasks/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, TaskCreate taskUpdate)
+        [HttpPut("{iduser}/{id}")]
+        public async Task<IActionResult> Put(int iduser, int id , TaskCreate taskUpdate)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            var task = await _context.Tasks
+                            .FirstOrDefaultAsync(t => t.Id == id && t.IdUser == iduser);
             if (task == null)
             {
                 return NotFound();
@@ -73,7 +74,7 @@ namespace TaskService.Controllers
 
             task.Text = taskUpdate.Text;
             task.IsDone = taskUpdate.IsDone;
-            //task.IdUser = taskUpdate.IdUser;
+            task.IdUser = iduser;
 
             await _context.SaveChangesAsync();
 
@@ -81,10 +82,11 @@ namespace TaskService.Controllers
         }
 
         // DELETE api/Tasks/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{idUser}/{id}")]
+        public async Task<IActionResult> Delete(int idUser , int id)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            var task = await _context.Tasks
+                            .FirstOrDefaultAsync(t => t.Id == id && t.IdUser == idUser);
             if (task == null)
             {
                 return NotFound();

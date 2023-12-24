@@ -67,4 +67,63 @@ public class TaskService
                     return null;
             }
     }
+
+    public async Task<string> DeleteTaskAsync(int id){
+            string cheminFichier = "poken.txt";
+            string line = File.ReadAllText(cheminFichier);
+            string[] parts = line.Split(':');
+            int idUser ;
+            int.TryParse(parts[0].Trim(), out idUser);
+            string token = parts[1].Trim();
+            string gatewayUrl = "http://localhost:5000/"; 
+            string loginRoute = $"api/User/task/{idUser}/{id}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        
+            HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
+
+
+            // Check if the response status code is 201 (Created)
+            if (response.IsSuccessStatusCode)
+                {
+                    return "suppressin est bien fait";
+
+                }
+            else
+                {
+                    return "Erreur dans la suppression";
+                }
+        }
+
+
+    public async Task<string> UpdateTaskAsync(int id , string text , bool valid){
+            string cheminFichier = "poken.txt";
+            string line = File.ReadAllText(cheminFichier);
+            string[] parts = line.Split(':');
+            int idUser ;
+            int.TryParse(parts[0].Trim(), out idUser);
+            string token = parts[1].Trim();
+            string gatewayUrl = "http://localhost:5000/"; 
+            string loginRoute = $"api/User/task/{idUser}/{id}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var putData = new { Text = text , IsDone = valid , IdUser = idUser};
+        
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl , putData);
+
+
+            // Check if the response status code is 201 (Created)
+            if (response.IsSuccessStatusCode)
+                {
+                    return "update";
+
+                }
+            else
+                {
+                    return null;
+                }
+        }
 }

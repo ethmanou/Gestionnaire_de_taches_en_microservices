@@ -124,7 +124,7 @@ namespace GatewayService.Controllers
          // api/User/task
          [Authorize]
         [HttpPost("task/{iduser}")]
-        public async Task<ActionResult> GetTasks(TaskCreate task , int iduser)
+        public async Task<ActionResult> CreateTasks(TaskCreate task , int iduser)
         {
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
@@ -151,6 +151,60 @@ namespace GatewayService.Controllers
                 }
             }
             
+        }
+
+        [Authorize]
+        [HttpDelete("task/{iduser}/{id}")]
+        public async Task<IActionResult> Delete(int iduser , int id){
+
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.DeleteAsync($"api/tasks/{iduser}/{id}");
+
+
+                // Check if the response status code is 201 (Created)
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("suppressin est bien fait");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur dans la suppression");
+                }
+            }
+        }
+
+        [Authorize]
+        [HttpPut("task/{iduser}/{id}")]
+        public async Task<IActionResult> Delete(int iduser , int id , TaskCreate task){
+
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.PutAsJsonAsync($"api/tasks/{iduser}/{id}" , task);
+
+
+                // Check if the response status code is 201 (Created)
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Updated ");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur : Not Updated");
+                }
+            }
         }
 
 
