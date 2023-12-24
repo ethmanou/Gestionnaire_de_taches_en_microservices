@@ -16,4 +16,4 @@ Bien sûr, vous avez la possibilité de créer de nouveaux utilisateurs avec des
 
 ---
 
-Taille du texte : 782 caractères
+Taille du texte : 1999 caractères
