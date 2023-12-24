@@ -4,8 +4,8 @@ Le projet est dirigé par moi-même, Mohamedene Ethmanou, et je suis ravi de le 
 
 Pour faciliter les tests, j'ai  déjà créé deux utilisateurs :
 
-Nom d'utilisateur : ethmanou, Mot de passe : ethmanou
-Nom d'utilisateur : mohamed, Mot de passe : mohamed
+#Nom d'utilisateur : ethmanou, Mot de passe : ethmanou
+#Nom d'utilisateur : mohamed, Mot de passe : mohamed
 
 
 Bien sûr, vous avez la possibilité de créer de nouveaux utilisateurs avec des tâches pour tester davantage l'application.
