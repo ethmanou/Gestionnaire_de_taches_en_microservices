@@ -14,6 +14,4 @@ Pour faciliter les tests, j'ai déjà créé deux utilisateurs :
 
 Bien sûr, vous avez la possibilité de créer de nouveaux utilisateurs avec des tâches pour tester davantage l'application.
 
----
 
-Taille du texte : 1999 caractères
