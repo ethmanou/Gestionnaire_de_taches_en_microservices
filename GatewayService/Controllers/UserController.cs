@@ -49,7 +49,7 @@ namespace GatewayService.Controllers
                 {
                     // You can deserialize the response content here if needed
                     var user = await response.Content.ReadFromJsonAsync<UserDTO>();
-                    string token_u = GenerateJwtToken(user.Id);
+                    string token_u = GenerateJwtToken(user.Id , user.role);
                     var result = new {user = user , token = token_u};
                     return Ok(result);
                 }
@@ -65,6 +65,7 @@ namespace GatewayService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserCreateModel model)
         {
+            var user = new { Name = model.Name, Password = model.Password , Email =model.Email , role = "basic"};
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
             {
@@ -72,7 +73,7 @@ namespace GatewayService.Controllers
                 client.BaseAddress = new System.Uri("http://localhost:5001/");
 
                 // Send a POST request to the login endpoint
-                HttpResponseMessage response = await client.PostAsJsonAsync("api/Users/register", model);
+                HttpResponseMessage response = await client.PostAsJsonAsync("api/Users/register", user);
 
 
                 // Check if the response status code is 201 (Created)
@@ -87,8 +88,74 @@ namespace GatewayService.Controllers
                 }
             }
         }
+
+        // api/User/tasks
+        [Authorize(Roles = "admin")]
+        [HttpGet("tasks")]
+        public async Task<ActionResult> GetAllTasks()
+        {
+            // Create an HttpClient instance using the factory
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+                // Send a POST request to the login endpoint
+                var response = await client.GetFromJsonAsync<List<TaskModel>>($"api/tasks");
+
+
+                // Check if the response status code is 201 (Created)
+                if (response != null)
+                {
+                    // You can deserialize the response content here if needed
+                    //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
+                    return Ok(response);
+
+                }
+                else
+                {
+                    return BadRequest("Failed to retrieve tasks from TaskService.");
+                }
+            }
+            
+        }
+
+        // GET : api/user/Users
+        [Authorize(Roles = "admin")]
+        [HttpGet("Users")]
+        public async Task<ActionResult> GetAllUsers()
+        {
+            // Create an HttpClient instance using the factory
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5001/");
+
+                // Send a POST request to the login endpoint
+                var response = await client.GetFromJsonAsync<List<UserDTO>>($"api/Users");
+
+
+                // Check if the response status code is 201 (Created)
+                if (response != null)
+                {
+                    // You can deserialize the response content here if needed
+                    //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
+                    return Ok(response);
+
+                }
+                else
+                {
+                    return BadRequest("Failed to retrieve Users from UsersService.");
+                }
+            }
+            
+        }
+
+        
+
+
          // api/User/tasks
-         [Authorize]
+        [Authorize]
         [HttpGet("tasks/{iduser}")]
         public async Task<ActionResult> GetTasks(int iduser)
         {
@@ -155,8 +222,7 @@ namespace GatewayService.Controllers
 
         [Authorize]
         [HttpDelete("task/{iduser}/{id}")]
-        public async Task<IActionResult> Delete(int iduser , int id){
-
+        public async Task<IActionResult> DeleteTaskAsync(int iduser , int id){
             using (var client = _httpClientFactory.CreateClient())
             {
                 // Set the base address of the API you want to call
@@ -182,7 +248,7 @@ namespace GatewayService.Controllers
 
         [Authorize]
         [HttpPut("task/{iduser}/{id}")]
-        public async Task<IActionResult> Delete(int iduser , int id , TaskCreate task){
+        public async Task<IActionResult> UpdateTaskAsync(int iduser , int id , TaskCreate task){
 
             using (var client = _httpClientFactory.CreateClient())
             {
@@ -207,14 +273,67 @@ namespace GatewayService.Controllers
             }
         }
 
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUserAsync(int id){
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5001/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.DeleteAsync($"api/Users/{id}");
+
+
+                // Check if the response status code is 200 
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("suppressin est bien fait");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur dans la suppression");
+                }
+            }
+        }
+
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUserAsync(int id, UserDTO user){
+
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5001/");
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.PutAsJsonAsync($"api/Users/{id}" , user);
+
+
+                // Check if the response status code is 200 
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Updated ");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur : Not Updated");
+                }
+            }
+        }
+
 
         ///ger
-        private string GenerateJwtToken(int userId)
+        private string GenerateJwtToken(int userId , string role)
             {
                 var claims = new List<Claim>
                 {
                     // On ajoute un champ UserId dans notre token avec comme valeur userId en string
-                    new Claim("UserId", userId.ToString()) 
+                    new Claim("UserId", userId.ToString()),
+                    new Claim(ClaimTypes.Role, role),
                 };
 
                 // On créer la clé de chiffrement

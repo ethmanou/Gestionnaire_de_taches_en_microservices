@@ -30,7 +30,7 @@ namespace Front.Services
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
             // Construisez les données JSON pour la requête POST
-            var postData = new { Name = username, Password = password , Email =email  };
+            var postData = new { Name = username, Password = password , Email =email };
             var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
 
             

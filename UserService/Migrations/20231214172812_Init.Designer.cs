@@ -36,6 +36,7 @@ namespace UserService.Migrations
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("TEXT");
+                    
 
                     b.HasKey("Id");
 

@@ -30,6 +30,14 @@ namespace UserService.Migrations
                 oldClrType: typeof(string),
                 oldType: "TEXT");
 
+            migrationBuilder.AlterColumn<string>(
+                name: "role",
+                table: "User",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT");
+
             migrationBuilder.AddColumn<string>(
                 name: "PasswordHash",
                 table: "User",
@@ -56,6 +64,16 @@ namespace UserService.Migrations
 
             migrationBuilder.AlterColumn<string>(
                 name: "Email",
+                table: "User",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true);
+
+             migrationBuilder.AlterColumn<string>(
+                name: "role",
                 table: "User",
                 type: "TEXT",
                 nullable: false,

@@ -36,6 +36,18 @@ public class TaskService
         return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{idUser}");
     }
 
+    public async Task<List<TaskModel>> GetAllTasksAsync()
+    {
+        string cheminFichier = "poken.txt";
+        string line = File.ReadAllText(cheminFichier);
+        string[] parts = line.Split(':');
+        string token = parts[1].Trim();
+        int idUser ;
+        int.TryParse(parts[0].Trim(), out idUser);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks");
+    }
+
     public async Task<string> CreateTask(string text , bool valid ){
             string cheminFichier = "poken.txt";
             string line = File.ReadAllText(cheminFichier);
@@ -84,7 +96,7 @@ public class TaskService
             HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
 
 
-            // Check if the response status code is 201 (Created)
+            // Check if the response status code is 200 
             if (response.IsSuccessStatusCode)
                 {
                     return "suppressin est bien fait";
@@ -115,7 +127,7 @@ public class TaskService
             HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl , putData);
 
 
-            // Check if the response status code is 201 (Created)
+            // Check if the response status code is 200 
             if (response.IsSuccessStatusCode)
                 {
                     return "update";

@@ -6,6 +6,7 @@ namespace UserService.Entities
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
+        public string? role  { get; set; }
     }
     public class UserLogin
     {
@@ -26,6 +27,8 @@ namespace UserService.Entities
         public  string Text { get; set; }
 
         public bool IsDone { get; set; }
+
+        public int IdUser {get; set; }
 
     }
 

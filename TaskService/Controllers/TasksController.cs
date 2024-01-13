@@ -18,8 +18,17 @@ namespace TaskService.Controllers
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
+        
 
-        // GET: api/Tasks
+        //GET : api/tasks
+        [HttpGet()]
+        public async Task<IEnumerable<Tasks>> GetALL()
+        {
+             return await _context.Tasks
+                        .ToListAsync();
+        }
+
+        // GET: api/Tasks/iduser
         [HttpGet("{iduser}")]
         public async Task<IEnumerable<Tasks>> Get(int iduser)
         {
@@ -29,8 +38,8 @@ namespace TaskService.Controllers
         }
 
         // GET api/Tasks/5
-        /*[HttpGet("{id}")]
-        public async Task<ActionResult<Tasks>> Get(int id , int iduser)
+        [HttpGet("{iduser}/{id}")]
+        public async Task<ActionResult<Tasks>> GetT(int id , int iduser)
         {
             var task = await _context.Tasks.FindAsync(id);
 
@@ -39,8 +48,8 @@ namespace TaskService.Controllers
                 return NotFound();
             }
 
-            return TaskToTasks(task);
-        }*/
+            return task;
+        }
 
         // POST api/Tasks
         [HttpPost("{iduser}")]

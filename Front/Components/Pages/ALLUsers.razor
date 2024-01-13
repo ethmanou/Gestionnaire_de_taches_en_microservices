@@ -1,0 +1,129 @@
+<!-- TaskList.razor -->
+@page "/ALLUsers"
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
+@using Front.Entities
+@inject LoginService LoginService
+@inherits Microsoft.AspNetCore.Components.ComponentBase
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize(Roles = "admin")]
+<h3>Liste des tâches</h3>
+
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>IDUser</th>
+            <th>Nom</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (users != null)
+        {
+            var index = 0;
+            @foreach (var user in users)
+            {
+                var currentIndex = index; 
+                
+                <tr>
+                    <td>@user.Id</td>
+                    @if(table_updated[index])
+                    {
+                        <td>@user?.Name</td>
+                        <td>@user?.role</td>
+                    }
+                    else{
+                    <td>
+                        <td>@user?.Name</td>
+                        <input @bind="@user.role" disabled = "@table_updated[index]" />
+                    </td>
+                    }
+                    <td>
+                        @if (!table_updated[index])
+                        {
+                            <button @onclick="(() => HandleSave(user , currentIndex))">save </button>
+                        }
+                        else{
+                            <button @onclick="(() => HandleUpdate(currentIndex))">Met à jour </button>
+                            <button @onclick="(() => ShowOptionDelete(currentIndex))">Delete</button>
+                        }
+                        @if (table_deleted[index])
+                            {
+                                <div>
+                                    <p>Voulez-vous vraiment supprimer cette user?</p>
+                                    <button @onclick="(() => HandleDelete(user.Id))">Oui</button>
+                                    <button @onclick="(() => CancelDelete(currentIndex))">Annuler</button>
+                                </div>
+                            }
+                        
+                    </td>
+                </tr>
+                index++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3">Aucune user disponible pour le moment.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private bool[] table_deleted;
+    private bool[] table_updated;
+
+    private List<UserDTO> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await LoginService.GetAllUsersAsync();
+        table_updated = new bool[users.Count+1] ;
+        for(int i=0 ; i<users.Count ; i++){
+            table_updated[i] = true;
+        }
+        table_deleted = new bool[users.Count+1] ;
+        for(int i=0 ; i<users.Count ; i++){
+            table_deleted[i] = false;
+        }
+    }
+
+
+    private void ShowOptionDelete(int indx)
+        {
+            table_deleted[indx] = true;
+        }
+
+    private void CancelDelete(int indx)
+        {
+            table_deleted[indx] = false;
+        }
+
+
+    
+    private async Task HandleDelete(int id)
+    {
+        
+        var resultat = await LoginService.DeleteUserAsync(id);
+        users = await LoginService.GetAllUsersAsync();
+
+        
+
+    }
+
+    private async Task HandleUpdate(int indx){
+        table_updated[indx] = false;
+    }
+    private async Task HandleSave(UserDTO user , int indx){
+        var resultat = await LoginService.UpdateUserAsync(user.Id , user);
+        table_updated[indx] = true;
+    }
+}
+
+
