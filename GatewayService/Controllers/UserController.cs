@@ -49,9 +49,18 @@ namespace GatewayService.Controllers
                 {
                     // You can deserialize the response content here if needed
                     var user = await response.Content.ReadFromJsonAsync<UserDTO>();
-                    string token_u = GenerateJwtToken(user.Id , user.role);
+                    if(user != null) {
+                    var role = "basic" ;
+                    if(user.role != null){
+                        role = user.role ;
+                    }
+                    string token_u = GenerateJwtToken(user.Id , role);
                     var result = new {user = user , token = token_u};
                     return Ok(result);
+                    }
+                    else{
+                        return BadRequest("Login failed");
+                    }
                 }
                 else
                 {

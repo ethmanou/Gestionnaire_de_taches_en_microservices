@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 
 
@@ -19,10 +20,12 @@ namespace Front.Services
     public class LoginService
     {
         private readonly HttpClient _httpClient;
+        private ProtectedLocalStorage _sessionStorage;
 
-        public LoginService(HttpClient httpClient)
+        public LoginService(HttpClient httpClient , ProtectedLocalStorage sessionStorage)
         {
             _httpClient = httpClient;
+            _sessionStorage = sessionStorage;
         }
 
        public async Task<UserDTO> AuthenticateUser(string username, string password)
@@ -43,9 +46,8 @@ namespace Front.Services
                     if (response.IsSuccessStatusCode)
                     {
                         var resultat = await response.Content.ReadFromJsonAsync<response_t>();
-                        string cheminFichier = "poken.txt";
-                        string lineToAdd = $"{resultat.user.Id}:{resultat.token}";
-                        File.WriteAllText(cheminFichier, $"{lineToAdd}\n");
+                        await _sessionStorage.SetAsync("IdUser" , resultat.user.Id);
+                        await _sessionStorage.SetAsync("jwt", resultat.token);
                         return resultat.user;
                     }
                     else

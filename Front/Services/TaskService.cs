@@ -12,57 +12,46 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 
 
 public class TaskService
 {
     private readonly HttpClient _httpClient;
+    private ProtectedLocalStorage _sessionStorage;
 
-    public TaskService(HttpClient httpClient)
+
+    public TaskService(HttpClient httpClient , ProtectedLocalStorage sessionStorage)
     {
         _httpClient = httpClient;
+        _sessionStorage = sessionStorage;
     }
 
     public async Task<List<TaskModel>> GetTasksAsync()
     {
-        string cheminFichier = "poken.txt";
-        string line = File.ReadAllText(cheminFichier);
-        string[] parts = line.Split(':');
-        string token = parts[1].Trim();
-        int idUser ;
-        int.TryParse(parts[0].Trim(), out idUser);
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{idUser}");
+        var jwt = await _sessionStorage.GetAsync<string>("jwt");
+        var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+        return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{IdUser.Value}");
     }
 
     public async Task<List<TaskModel>> GetAllTasksAsync()
     {
-        string cheminFichier = "poken.txt";
-        string line = File.ReadAllText(cheminFichier);
-        string[] parts = line.Split(':');
-        string token = parts[1].Trim();
-        int idUser ;
-        int.TryParse(parts[0].Trim(), out idUser);
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var jwt = await _sessionStorage.GetAsync<string>("jwt");
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
         return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks");
     }
 
     public async Task<string> CreateTask(string text , bool valid ){
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            string token = parts[1].Trim();
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
             string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{idUser}";
+            string loginRoute = $"api/User/task/{IdUser.Value}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
-
-            // Construisez les données JSON pour la requête POST
             
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var postData = new { Text = text , IsDone = valid , IdUser = idUser};
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+            var postData = new { Text = text , IsDone = valid , IdUser = IdUser.Value};
             var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
 
             
@@ -81,17 +70,13 @@ public class TaskService
     }
 
     public async Task<string> DeleteTaskAsync(int id){
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            string token = parts[1].Trim();
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
             string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{idUser}/{id}";
+            string loginRoute = $"api/User/task/{IdUser.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
         
             HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
 
@@ -110,19 +95,15 @@ public class TaskService
 
 
     public async Task<string> UpdateTaskAsync(int id , string text , bool valid){
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            string token = parts[1].Trim();
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
             string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{idUser}/{id}";
+            string loginRoute = $"api/User/task/{IdUser.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
 
-            var putData = new { Text = text , IsDone = valid , IdUser = idUser};
+            var putData = new { Text = text , IsDone = valid , IdUser = IdUser.Value};
         
             HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl , putData);
 
