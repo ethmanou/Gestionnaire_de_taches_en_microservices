@@ -1,28 +1,21 @@
 // TaskService.cs
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Front.Services; 
 using Front.Entities;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-
-
+using System.Net.Http.Headers;
 
 public class TaskService
 {
     private readonly HttpClient _httpClient;
-    private ProtectedLocalStorage _sessionStorage;
+    private readonly ProtectedLocalStorage _sessionStorage;
 
-
-    public TaskService(HttpClient httpClient , ProtectedLocalStorage sessionStorage)
+    public TaskService(HttpClient httpClient, ProtectedLocalStorage sessionStorage)
     {
         _httpClient = httpClient;
         _sessionStorage = sessionStorage;
@@ -30,93 +23,160 @@ public class TaskService
 
     public async Task<List<TaskModel>> GetTasksAsync()
     {
-        var jwt = await _sessionStorage.GetAsync<string>("jwt");
-        var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-        return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{IdUser.Value}");
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+        var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
+
+        if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+            var tasks = await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{idUserResult.Value}");
+
+            return tasks ?? new List<TaskModel>();
+        }
+        else
+        {
+            // Gérer le cas où la récupération de jwt ou IdUser a échoué
+            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
+            return new List<TaskModel>();
+        }
     }
 
     public async Task<List<TaskModel>> GetAllTasksAsync()
     {
-        var jwt = await _sessionStorage.GetAsync<string>("jwt");
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-        return await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks");
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+
+        if (jwtResult.Success && jwtResult.Value != null)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+            return await _httpClient.GetFromJsonAsync<List<TaskModel>>("http://localhost:5000/api/User/tasks") ?? new List<TaskModel>();
+        }
+        else
+        {
+            // Gérer le cas où la récupération de jwt a échoué
+            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
+            return new List<TaskModel>();
+        }
     }
 
-    public async Task<string> CreateTask(string text , bool valid ){
-            var jwt = await _sessionStorage.GetAsync<string>("jwt");
-            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
-            string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{IdUser.Value}";
-            string apiUrl = $"{gatewayUrl}{loginRoute}";
-            
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-            var postData = new { Text = text , IsDone = valid , IdUser = IdUser.Value};
-            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
+    public async Task<string> CreateTask(string text, bool valid)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+        var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
 
-            
+        if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/User/task/{idUserResult.Value}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+            var postData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
+
             HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
 
-            if (response.IsSuccessStatusCode)
-            {
-                    return "Bien fait";
-            }
-            else
-            {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error Response Body: {responseBody}");
-                    return null;
-            }
+            return response.IsSuccessStatusCode ? "Bien fait" : "not Bien";
+        }
+        else
+        {
+            // Gérer le cas où la récupération de jwt ou IdUser a échoué
+            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
+            return "not Bien";
+        }
     }
 
-    public async Task<string> DeleteTaskAsync(int id){
-            var jwt = await _sessionStorage.GetAsync<string>("jwt");
-            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
-            string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{IdUser.Value}/{id}";
-            string apiUrl = $"{gatewayUrl}{loginRoute}";
+    public async Task<string> DeleteTaskAsync(int id)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+        var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-        
+        if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success )
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/User/task/{idUserResult.Value}/{id}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
             HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
 
-
-            // Check if the response status code is 200 
-            if (response.IsSuccessStatusCode)
-                {
-                    return "suppressin est bien fait";
-
-                }
-            else
-                {
-                    return "Erreur dans la suppression";
-                }
+            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
         }
+        else
+        {
+            return "Erreur dans la suppression";
+        }
+    }
 
+    public async Task<string> DeleteTaskAsyncAdmin(int id)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
 
-    public async Task<string> UpdateTaskAsync(int id , string text , bool valid){
-            var jwt = await _sessionStorage.GetAsync<string>("jwt");
-            var IdUser = await _sessionStorage.GetAsync<int>("IdUser");
-            string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = $"api/User/task/{IdUser.Value}/{id}";
+        if (jwtResult.Success && jwtResult.Value != null )
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/User/task/{id}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+            HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
+
+            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
+        }
+        else
+        {
+            return "Erreur dans la suppression";
+        }
+    }
+
+    public async Task<string> UpdateTaskAsync(int id, string text, bool valid)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+        var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
+
+        if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success )
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/User/task/{idUserResult.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+            var putData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
 
-            var putData = new { Text = text , IsDone = valid , IdUser = IdUser.Value};
-        
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl , putData);
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
 
-
-            // Check if the response status code is 200 
-            if (response.IsSuccessStatusCode)
-                {
-                    return "update";
-
-                }
-            else
-                {
-                    return null;
-                }
+            return response.IsSuccessStatusCode ? "update" : "not updated";
         }
+        else
+        {
+            // Gérer le cas où la récupération de jwt ou IdUser a échoué
+            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
+            return "not updated";
+        }
+    }
+
+    public async Task<string> UpdateTaskAsyncAdmin(int id, string text, bool valid , int IdUser)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+
+        if (jwtResult.Success && jwtResult.Value != null )
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/User/task/{id}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+
+            var putData = new { Text = text, IsDone = valid, IdUser = IdUser };
+
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
+
+            return response.IsSuccessStatusCode ? "update" : "not updated";
+        }
+        else
+        {
+            // Gérer le cas où la récupération de jwt ou IdUser a échoué
+            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
+            return "not updated";
+        }
+    }
 }

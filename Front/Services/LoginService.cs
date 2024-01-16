@@ -1,137 +1,97 @@
 ﻿using Front.Entities;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using System.Text;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using Front.Services ; 
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-
-
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Front.Services
 {
     public class LoginService
     {
         private readonly HttpClient _httpClient;
-        private ProtectedLocalStorage _sessionStorage;
+        private readonly ProtectedLocalStorage _sessionStorage;
 
-        public LoginService(HttpClient httpClient , ProtectedLocalStorage sessionStorage)
+        public LoginService(HttpClient httpClient, ProtectedLocalStorage sessionStorage)
         {
-            _httpClient = httpClient;
-            _sessionStorage = sessionStorage;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _sessionStorage = sessionStorage ?? throw new ArgumentNullException(nameof(sessionStorage));
         }
 
-       public async Task<UserDTO> AuthenticateUser(string username, string password)
+        public async Task<UserDTO> AuthenticateUser(string username, string password)
         {
-            
-            string gatewayUrl = "http://localhost:5000/"; 
-            string loginRoute = "api/User/login"; 
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = "api/User/login";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
             // Construisez les données JSON pour la requête POST
             var postData = new { Name = username, Pass = password };
-            var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
+            var jsonContent = new StringContent(JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
 
             try
-                {
-                    HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
+            {
+                HttpResponseMessage response = await _httpClient.PostAsync(apiUrl, jsonContent);
 
-                    if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var resultat = await response.Content.ReadFromJsonAsync<response_t>();
+                    if (resultat?.token != null && resultat?.user?.Id != null)
                     {
-                        var resultat = await response.Content.ReadFromJsonAsync<response_t>();
-                        await _sessionStorage.SetAsync("IdUser" , resultat.user.Id);
+                        await _sessionStorage.SetAsync("IdUser", resultat.user.Id);
                         await _sessionStorage.SetAsync("jwt", resultat.token);
-                        return resultat.user;
                     }
-                    else
-                    {
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"Error Response Body: {responseBody}");
-                        return null;
-                    }
+                    return resultat.user ?? new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
                 }
-                catch (HttpRequestException ex)
+                else
                 {
-                    Console.WriteLine($"HTTP Request Exception: {ex.Message}");
-                    return null;
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error Response Body: {responseBody}");
+                    return new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
                 }
-
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+            }
         }
-
 
         public async Task<List<UserDTO>> GetAllUsersAsync()
         {
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            string token = parts[1].Trim();
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return await _httpClient.GetFromJsonAsync<List<UserDTO>>($"http://localhost:5000/api/User/Users");
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            if (jwt.Success && jwt.Value != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+            }
+            return await _httpClient.GetFromJsonAsync<List<UserDTO>>("http://localhost:5000/api/User/Users") ?? new List<UserDTO>();
         }
 
-        
-
-        public async Task<string>  UpdateUserAsync(int IdUser , UserDTO user) 
+        public async Task<string> UpdateUserAsync(int IdUser, UserDTO user)
         {
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            string token = parts[1].Trim();
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response =  await _httpClient.PutAsJsonAsync($"http://localhost:5000/api/User/{IdUser}" , user);
-
-            if(response.IsSuccessStatusCode){
-
-                return "updated" ;
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            if (jwt.Success && jwt.Value != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
             }
-            else{
-                return "Not Updated" ;
-            }
+            HttpResponseMessage response = await _httpClient.PutAsJsonAsync($"http://localhost:5000/api/User/{IdUser}", user);
 
+            return response.IsSuccessStatusCode ? "updated" : "Not Updated";
         }
 
-        public async Task<string> DeleteUserAsync(int IdUser) 
+        public async Task<string> DeleteUserAsync(int IdUser)
         {
-            string cheminFichier = "poken.txt";
-            string line = File.ReadAllText(cheminFichier);
-            string[] parts = line.Split(':');
-            string token = parts[1].Trim();
-            int idUser ;
-            int.TryParse(parts[0].Trim(), out idUser);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response =  await _httpClient.DeleteAsync($"http://localhost:5000/api/User/{IdUser}");
-
-            if(response.IsSuccessStatusCode){
-
-                return "suppression Bien Fait";
+            var jwt = await _sessionStorage.GetAsync<string>("jwt");
+            if (jwt.Success && jwt.Value != null)
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
             }
-            else{
-                return "Erreur dans la suppression" ;
-            }
+            HttpResponseMessage response = await _httpClient.DeleteAsync($"http://localhost:5000/api/User/{IdUser}");
+
+            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
         }
-
-            
-        
     }
 }
-
-
-
-
-        
-    
-
-
-
- 

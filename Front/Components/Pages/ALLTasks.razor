@@ -125,7 +125,7 @@
     private async Task HandleDelete(int id)
     {
         
-        var resultat = await TaskService.DeleteTaskAsync(id);
+        var resultat = await TaskService.DeleteTaskAsyncAdmin(id);
         tasks = await TaskService.GetAllTasksAsync();
 
         
@@ -136,7 +136,7 @@
         table_updated[indx] = false;
     }
     private async Task HandleSave(TaskModel task , int indx){
-        var resultat = await TaskService.UpdateTaskAsync(task.Id , task.Text , task.IsDone);
+        var resultat = await TaskService.UpdateTaskAsyncAdmin(task.Id , task.Text , task.IsDone, task.IdUser);
         table_updated[indx] = true;
     }
 }

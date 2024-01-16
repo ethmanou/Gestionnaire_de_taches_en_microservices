@@ -50,13 +50,13 @@
 
     private class RegisterModel
     {
-         [Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
+        //[Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
         public string Name { get; set; } = "";
 
-        [Alphanumeric(ErrorMessage = "Password doit être alphanumérique.")]
+        //[Alphanumeric(ErrorMessage = "Password doit être alphanumérique.")]
         public string Pass { get; set; } = "";
 
-        [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
+        //[EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
         public string Email { get; set; } = "";
     }
 }

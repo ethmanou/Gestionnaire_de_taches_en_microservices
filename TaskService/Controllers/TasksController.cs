@@ -74,37 +74,71 @@ namespace TaskService.Controllers
         [HttpPut("{iduser}/{id}")]
         public async Task<IActionResult> Put(int iduser, int id , TaskCreate taskUpdate)
         {
-            var task = await _context.Tasks
+            if(iduser != 1){
+                var task = await _context.Tasks
                             .FirstOrDefaultAsync(t => t.Id == id && t.IdUser == iduser);
-            if (task == null)
-            {
-                return NotFound();
+                if (task == null)
+                {
+                    return NotFound();
+                }
+
+                task.Text = taskUpdate.Text;
+                task.IsDone = taskUpdate.IsDone;
+                task.IdUser = iduser;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(task);
             }
+            else{
+                var task = await _context.Tasks
+                            .FirstOrDefaultAsync(t => t.Id == id);
+                if (task == null)
+                {
+                    return NotFound();
+                }
 
-            task.Text = taskUpdate.Text;
-            task.IsDone = taskUpdate.IsDone;
-            task.IdUser = iduser;
+                task.Text = taskUpdate.Text;
+                task.IsDone = taskUpdate.IsDone;
+                task.IdUser = taskUpdate.IdUser;
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-            return Ok(task);
+                return Ok(task);
+            }
         }
 
         // DELETE api/Tasks/5
         [HttpDelete("{idUser}/{id}")]
         public async Task<IActionResult> Delete(int idUser , int id)
         {
-            var task = await _context.Tasks
-                            .FirstOrDefaultAsync(t => t.Id == id && t.IdUser == idUser);
-            if (task == null)
-            {
-                return NotFound();
+            if(idUser != 1){
+                
+                var task = await _context.Tasks
+                                .FirstOrDefaultAsync(t => t.Id == id && t.IdUser == idUser);
+                if (task == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Tasks.Remove(task);
+                await _context.SaveChangesAsync();
+
+                return Ok(true);
             }
+            else{
+                var task = await _context.Tasks
+                                .FirstOrDefaultAsync(t => t.Id == id);
+                if (task == null)
+                {
+                    return NotFound();
+                }
 
-            _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
+                _context.Tasks.Remove(task);
+                await _context.SaveChangesAsync();
 
-            return Ok(true);
+                return Ok(true);
+            }
         }
 
         

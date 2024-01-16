@@ -44,7 +44,7 @@ namespace Front.Services
             {
                     string responseBody = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Response Body: {responseBody}");
-                    return null;
+                    return "not fait";
             }
         
                 

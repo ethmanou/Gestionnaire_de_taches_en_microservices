@@ -18,7 +18,7 @@ namespace TaskService.Entities
     {
         public string Text { get; set; }
         public bool IsDone { get; set; }
-        //public int IdUser  {get; set;}
+        public int IdUser  {get; set;}
 
     }
 }

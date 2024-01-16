@@ -198,7 +198,7 @@ namespace GatewayService.Controllers
         }
 
          // api/User/task
-         [Authorize]
+        [Authorize]
         [HttpPost("task/{iduser}")]
         public async Task<ActionResult> CreateTasks(TaskCreate task , int iduser)
         {
@@ -211,6 +211,37 @@ namespace GatewayService.Controllers
 
                 // Send a POST request to the login endpoint
                 HttpResponseMessage response = await client.PostAsJsonAsync($"api/tasks/{iduser}" , task);
+
+
+                // Check if the response status code is 201 (Created)
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    // You can deserialize the response content here if needed
+                    //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
+                    return Ok();
+
+                }
+                else
+                {
+                    return BadRequest("Failed to create task.");
+                }
+            }
+            
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpPost("task")]
+        public async Task<ActionResult> CreateTasksAdmin(TaskCreate task )
+        {
+            // Create an HttpClient instance using the factory
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.PostAsJsonAsync($"api/tasks/{task.IdUser}" , task);
 
 
                 // Check if the response status code is 201 (Created)
@@ -255,6 +286,32 @@ namespace GatewayService.Controllers
             }
         }
 
+        [Authorize( Roles = "admin")]
+        [HttpDelete("task/{id}")]
+        public async Task<IActionResult> DeleteTaskAsyncAdmin(int id){
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.DeleteAsync($"api/tasks/1/{id}");
+
+
+                // Check if the response status code is 201 (Created)
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("suppressin est bien fait");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur dans la suppression");
+                }
+            }
+        }
+
         [Authorize]
         [HttpPut("task/{iduser}/{id}")]
         public async Task<IActionResult> UpdateTaskAsync(int iduser , int id , TaskCreate task){
@@ -282,9 +339,36 @@ namespace GatewayService.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "admin")]
+        [HttpPut("task/{id}")]
+        public async Task<IActionResult> UpdateTaskAsyncAdmin(int Id , TaskCreate task){
+
+            using (var client = _httpClientFactory.CreateClient())
+            {
+                // Set the base address of the API you want to call
+                client.BaseAddress = new System.Uri("http://localhost:5002/");
+
+
+                // Send a POST request to the login endpoint
+                HttpResponseMessage response = await client.PutAsJsonAsync($"api/tasks/{task.IdUser}/{Id}" , task);
+
+
+                // Check if the response status code is 201 (Created)
+                if (response.IsSuccessStatusCode)
+                {
+                    return Ok("Updated ");
+
+                }
+                else
+                {
+                    return BadRequest("Erreur : Not Updated");
+                }
+            }
+        }
+
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserAsync(int id){
+        public async Task<IActionResult> DeleteUserAsyncAdmin(int id){
             using (var client = _httpClientFactory.CreateClient())
             {
                 // Set the base address of the API you want to call
@@ -308,9 +392,9 @@ namespace GatewayService.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, UserDTO user){
+        public async Task<IActionResult> UpdateUserAsyncAdmin(int id, UserDTO user){
 
             using (var client = _httpClientFactory.CreateClient())
             {
