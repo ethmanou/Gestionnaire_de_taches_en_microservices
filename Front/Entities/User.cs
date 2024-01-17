@@ -48,12 +48,12 @@ namespace Front.Entities
 
 
 
-    /*public class AlphanumericAttribute : ValidationAttribute
+    public class AlphanumericAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            //if (value != null)
-            //{
+            if (value != null)
+            {
                 string? inputValue = value.ToString();
 
                 // Utilisez une expression régulière pour vérifier que la chaîne ne contient que des caractères alphanumériques
@@ -61,11 +61,11 @@ namespace Front.Entities
                 {
                     return new ValidationResult(ErrorMessage ?? "La valeur doit être alphanumérique.");
                 }
-            //}
+            }
 
             return ValidationResult.Success;
         }
-    }*/
+    }
 
     
 

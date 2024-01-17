@@ -1,4 +1,7 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
+
+
 namespace UserService.Entities
 {
     public class UserDTO
@@ -15,8 +18,13 @@ namespace UserService.Entities
     }
     public class UserCreateModel
     {
+        [Alphanumeric(ErrorMessage = "Password doit être alphanumérique.")]
         public required string? Password { get; set; }
+
+        [Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
         public required string? Name { get; set; }
+
+        [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
         public required string? Email { get; set; }
     }
 
@@ -42,6 +50,26 @@ namespace UserService.Entities
     {
         public UserDTO? user {get; set; } 
         public string? token {get; set;}
+    }
+
+
+    public class AlphanumericAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value != null)
+            {
+                string? inputValue = value.ToString();
+
+                // Utilisez une expression régulière pour vérifier que la chaîne ne contient que des caractères alphanumériques
+                if (!string.IsNullOrEmpty(inputValue) && !Regex.IsMatch(inputValue, "^[a-zA-Z0-9]+$"))
+                {
+                    return new ValidationResult(ErrorMessage ?? "La valeur doit être alphanumérique.");
+                }
+            }
+
+            return ValidationResult.Success;
+        }
     }
 
 
