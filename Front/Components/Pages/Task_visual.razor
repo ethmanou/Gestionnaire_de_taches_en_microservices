@@ -92,11 +92,16 @@
     private bool[] table_deleted;
     private bool[] table_updated;
 
-    private List<TaskModel> tasks;
+    private List<TaskModel>? tasks;
 
     protected override async Task OnInitializedAsync()
     {
-        tasks = await TaskService.GetTasksAsync();
+        var interm = await TaskService.GetTasksAsync();
+        if(interm == null){
+            NavigationManager.NavigateTo("/error");
+        }
+        else{
+        tasks = interm;
         table_updated = new bool[tasks.Count+1] ;
         for(int i=0 ; i<tasks.Count ; i++){
             table_updated[i] = true;
@@ -104,6 +109,7 @@
         table_deleted = new bool[tasks.Count+1] ;
         for(int i=0 ; i<tasks.Count ; i++){
             table_deleted[i] = false;
+        }
         }
     }
 
@@ -124,6 +130,9 @@
     {
         
         var resultat = await TaskService.DeleteTaskAsync(id);
+        if(resultat == "Erreur de Connexion"){
+            NavigationManager.NavigateTo("/error");
+        }
         tasks = await TaskService.GetTasksAsync();
 
         
@@ -135,6 +144,9 @@
     }
     private async Task HandleSave(TaskModel task , int indx){
         var resultat = await TaskService.UpdateTaskAsync(task.Id , task.Text , task.IsDone);
+        if(resultat == "Erreur de Connexion"){
+            NavigationManager.NavigateTo("/error");
+        }
         table_updated[indx] = true;
     }
 }

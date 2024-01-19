@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Front.Entities
 {
+
      
     public class UserDTO
     {
@@ -22,9 +23,9 @@ namespace Front.Entities
     {
         public int Id { get; set; }
 
-        public  string? Text { get; set; }
+        public  required string? Text { get; set; }
 
-        public bool IsDone { get; set; }
+        public required bool IsDone { get; set; }
 
         public int IdUser  { get; set; }
 
@@ -32,15 +33,15 @@ namespace Front.Entities
 
     public class TaskCreate
     {
-        public string? Text { get; set; }
-        public bool IsDone { get; set; }
+        public required string? Text { get; set; }
+        public required bool IsDone { get; set; }
         public int IdUser  { get; set; }
     }
     
     public class response_t
     {
-        public UserDTO? user {get; set;}
-        public string? token {get ; set ;}
+        public required  UserDTO? user {get; set;}
+        public required string? token {get ; set ;}
     }
 
    

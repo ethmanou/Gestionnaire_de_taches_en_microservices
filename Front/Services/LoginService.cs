@@ -44,19 +44,26 @@ namespace Front.Services
                         await _sessionStorage.SetAsync("IdUser", resultat.user.Id);
                         await _sessionStorage.SetAsync("jwt", resultat.token);
                     }
-                    return resultat.user ?? new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+                    return resultat.user ;
                 }
                 else
                 {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error Response Body: {responseBody}");
-                    return new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+                    if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"Error Response Body: {responseBody}");
+                        return  new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+                    }
+                    else{
+
+                        return  new UserDTO { Id = -1, Name = "nobody", Email = "nobody", role = "nobody" };
+                    }
+                    
                 }
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"HTTP Request Exception: {ex.Message}");
-                return new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+                return new UserDTO { Id = -1, Name = "nobody", Email = "nobody", role = "nobody" };
             }
         }
 

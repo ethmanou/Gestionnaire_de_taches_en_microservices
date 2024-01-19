@@ -23,7 +23,7 @@
     private async Task HandleLogin()
     {
         var user = await loginService.AuthenticateUser(loginModel.Username, loginModel.Password);
-        if (user != null)
+        if (user.Id > 0)
         {
             var userClaim = await ((CustomAuthenticationStateProvider)authStateProvider).MarkUserAsAuthenticated(user);
 
@@ -31,8 +31,14 @@
         }
         else
         {
-            loginSuccess = false;
-            //NavigationManager.NavigateTo("/Error");
+            if(user.Id == 0){
+                loginSuccess = false;
+            }
+            else{
+                NavigationManager.NavigateTo("/Error");
+            }
+            
+            
         }
     }
 

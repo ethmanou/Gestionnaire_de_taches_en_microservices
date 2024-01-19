@@ -37,14 +37,20 @@
     private async void HandleRegister()
     {
         var user = await RegisterService.RegisterUser(registerModel.Name, registerModel.Pass , registerModel.Email);
-        if (user != null)
+        if (user == "Bien fait")
         {
             
             NavigationManager.NavigateTo("/register_success");
         }
         else
         {
-            NavigationManager.NavigateTo("/register_faild");
+            if(user == "not fait"){
+                NavigationManager.NavigateTo("/register_faild");
+            }
+            else{
+                NavigationManager.NavigateTo("/error");
+            }
+
         }
     }
 

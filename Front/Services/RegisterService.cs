@@ -32,19 +32,31 @@ namespace Front.Services
             // Construisez les données JSON pour la requête POST
             var postData = new { Name = username, Password = password , Email =email };
             var jsonContent = new StringContent(System.Text.Json.JsonSerializer.Serialize(postData), Encoding.UTF8, "application/json");
-
+            try{
             
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
+                    HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
 
-            if (response.IsSuccessStatusCode)
-            {
-                    return "Bien fait";
+                    if (response.IsSuccessStatusCode)
+                    {
+                            return "Bien fait";
+                    }
+                    else
+                    {
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            string responseBody = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Error Response Body: {responseBody}");
+                            return "not fait";
+                        }
+                        else{
+                            return "inregoinable";
+                        }
+                        
+                    }
             }
-            else
+            catch (HttpRequestException ex)
             {
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Error Response Body: {responseBody}");
-                    return "not fait";
+                //Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return "inregoinable";
             }
         
                 

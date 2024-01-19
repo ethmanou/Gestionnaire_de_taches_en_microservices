@@ -350,7 +350,7 @@ namespace GatewayService.Controllers
 
 
                 // Send a POST request to the login endpoint
-                HttpResponseMessage response = await client.PutAsJsonAsync($"api/tasks/{task.IdUser}/{Id}" , task);
+                HttpResponseMessage response = await client.PutAsJsonAsync($"api/tasks/1/{Id}" , task);
 
 
                 // Check if the response status code is 201 (Created)

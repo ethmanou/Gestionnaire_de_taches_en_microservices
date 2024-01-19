@@ -29,14 +29,39 @@ public class TaskService
         if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
-            var tasks = await _httpClient.GetFromJsonAsync<List<TaskModel>>($"http://localhost:5000/api/User/tasks/{idUserResult.Value}");
+            
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/User/tasks/{idUserResult.Value}");
 
-            return tasks ?? new List<TaskModel>();
+                if (response.IsSuccessStatusCode)
+                {
+                    
+                    var tasks = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
+                    return tasks ;
+                    
+                }
+                else
+                {
+                    if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  new List<TaskModel>();
+                        }
+                        else{
+                            Console.WriteLine($"Erreur HTTP : {response.StatusCode} - {response.ReasonPhrase}");
+                            return  null;
+                        }
+                    
+                    return null;
+                }
+            }
+            catch(HttpRequestException ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return null;
+            }
+
         }
         else
         {
-            // Gérer le cas où la récupération de jwt ou IdUser a échoué
-            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
             return new List<TaskModel>();
         }
     }
@@ -48,12 +73,37 @@ public class TaskService
         if (jwtResult.Success && jwtResult.Value != null)
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
-            return await _httpClient.GetFromJsonAsync<List<TaskModel>>("http://localhost:5000/api/User/tasks") ?? new List<TaskModel>();
+             try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/User/tasks");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    
+                    var tasks = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
+                    return tasks;
+                    
+                }
+                else
+                {
+                    if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  new List<TaskModel>();
+                        }
+                        else{
+                            Console.WriteLine($"Erreur HTTP : {response.StatusCode} - {response.ReasonPhrase}");
+                            return  null;
+                        }
+                    
+                    return null;
+                }
+            }
+            catch(HttpRequestException ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return null;
+            }
         }
         else
         {
-            // Gérer le cas où la récupération de jwt a échoué
-            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
             return new List<TaskModel>();
         }
     }
@@ -72,15 +122,33 @@ public class TaskService
             string apiUrl = $"{gatewayUrl}{loginRoute}";
             var postData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
 
-            HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
+            try{
+                HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
 
-            return response.IsSuccessStatusCode ? "Bien fait" : "not Bien";
+                if(response.IsSuccessStatusCode){
+                        return   "Création Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la Création";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+            }
+            catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return  "Erreur de Connexion";
+            }
+            
+
+            
         }
         else
         {
-            // Gérer le cas où la récupération de jwt ou IdUser a échoué
-            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
-            return "not Bien";
+            return   "Erreur de Connexion";
         }
     }
 
@@ -96,9 +164,30 @@ public class TaskService
             string gatewayUrl = "http://localhost:5000/";
             string loginRoute = $"api/User/task/{idUserResult.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
-            HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
 
-            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
+            try{
+                HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
+
+                if(response.IsSuccessStatusCode){
+                        return   "suppression Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la suppression";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+            }
+            catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return "Erreur de Connexion";
+            }
+            
+
+           
         }
         else
         {
@@ -117,13 +206,31 @@ public class TaskService
             string gatewayUrl = "http://localhost:5000/";
             string loginRoute = $"api/User/task/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
-            HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
+            try{
+                    HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
 
-            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
+                    if(response.IsSuccessStatusCode){
+                        return   "suppression Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la suppression";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+                }
+                catch(Exception ex){
+                    Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                    return "Erreur de Connexion";
+                }
+            
         }
         else
         {
-            return "Erreur dans la suppression";
+            return "Erreur de Connexion";
         }
     }
 
@@ -142,15 +249,30 @@ public class TaskService
 
             var putData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
 
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
+            try{
+                HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
 
-            return response.IsSuccessStatusCode ? "update" : "not updated";
+                if(response.IsSuccessStatusCode){
+                        return   "mis-à-jour Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la mis-à-jour";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+            }
+            catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return  "Erreur de Connexion";
+            }
         }
         else
         {
-            // Gérer le cas où la récupération de jwt ou IdUser a échoué
-            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
-            return "not updated";
+            return "Erreur de Connexion";
         }
     }
 
@@ -168,15 +290,31 @@ public class TaskService
 
             var putData = new { Text = text, IsDone = valid, IdUser = IdUser };
 
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
+            try{
+                HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
 
-            return response.IsSuccessStatusCode ? "update" : "not updated";
+                if(response.IsSuccessStatusCode){
+                        return   "mis-à-jour Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la mis-à-jour";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+            }
+            catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return "Erreur de Connexion";
+            }
         }
         else
         {
-            // Gérer le cas où la récupération de jwt ou IdUser a échoué
-            // Vous pouvez lancer une exception, enregistrer un message d'erreur, etc.
-            return "not updated";
+            
+            return "Erreur de Connexion";
         }
     }
 }
