@@ -96,21 +96,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var interm = await TaskService.GetTasksAsync();
-        if(interm == null){
-            NavigationManager.NavigateTo("/error");
+        tasks = await TaskService.GetTasksAsync();
+        if(tasks!= null){
+            table_updated = new bool[tasks.Count+1] ;
+            for(int i=0 ; i<tasks.Count ; i++){
+                table_updated[i] = true;
+            }
+            table_deleted = new bool[tasks.Count+1] ;
+            for(int i=0 ; i<tasks.Count ; i++){
+                table_deleted[i] = false;
+            }
         }
-        else{
-        tasks = interm;
-        table_updated = new bool[tasks.Count+1] ;
-        for(int i=0 ; i<tasks.Count ; i++){
-            table_updated[i] = true;
-        }
-        table_deleted = new bool[tasks.Count+1] ;
-        for(int i=0 ; i<tasks.Count ; i++){
-            table_deleted[i] = false;
-        }
-        }
+        
+        //}
     }
 
 

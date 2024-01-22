@@ -59,9 +59,10 @@ namespace TaskService.Controllers
             {
                 Text = task.Text,
                 IsDone = task.IsDone,
+                IdUser = iduser ,
             };
 
-            newTask.IdUser = iduser;
+            
 
             _context.Tasks.Add(newTask);
             await _context.SaveChangesAsync();

@@ -51,11 +51,12 @@ namespace Front.Services
                     if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
                         string responseBody = await response.Content.ReadAsStringAsync();
                         Console.WriteLine($"Error Response Body: {responseBody}");
-                        return  new UserDTO { Id = 0, Name = "nobody", Email = "nobody", role = "nobody" };
+                        return  new UserDTO { Id = 0, Name = "", Email = "", role = "" };
                     }
                     else{
-
-                        return  new UserDTO { Id = -1, Name = "nobody", Email = "nobody", role = "nobody" };
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"Error Response Body: {responseBody}");
+                        return  new UserDTO { Id = -1, Name = "", Email = "", role = "" };
                     }
                     
                 }
@@ -63,7 +64,7 @@ namespace Front.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"HTTP Request Exception: {ex.Message}");
-                return new UserDTO { Id = -1, Name = "nobody", Email = "nobody", role = "nobody" };
+                return new UserDTO { Id = -1, Name = "", Email = "", role = "" };
             }
         }
 
@@ -83,10 +84,36 @@ namespace Front.Services
             if (jwt.Success && jwt.Value != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-            }
-            HttpResponseMessage response = await _httpClient.PutAsJsonAsync($"http://localhost:5000/api/User/{IdUser}", user);
+                try{
+                    HttpResponseMessage response = await _httpClient.PutAsJsonAsync($"http://localhost:5000/api/User/{IdUser}", user);
 
-            return response.IsSuccessStatusCode ? "updated" : "Not Updated";
+                    if(response.IsSuccessStatusCode){
+                        return "Updated";
+                    }
+                    else{
+                        if((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                             string responseBody = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Error Response Body: {responseBody}");
+                            return "Not Updated";
+                        }
+                        else{
+                             string responseBody = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Error Response Body: {responseBody}");
+                            return "Erreur Connection";
+                        }
+                    }
+                }
+                catch(Exception ex){
+                    Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                    return "Erreur Connection";
+
+                }
+                
+            }
+            else{
+                return "Erreur Connection";
+            }
+            
         }
 
         public async Task<string> DeleteUserAsync(int IdUser)
@@ -95,10 +122,36 @@ namespace Front.Services
             if (jwt.Success && jwt.Value != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
-            }
-            HttpResponseMessage response = await _httpClient.DeleteAsync($"http://localhost:5000/api/User/{IdUser}");
+                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+                try{
+                    HttpResponseMessage response = await _httpClient.DeleteAsync($"http://localhost:5000/api/User/{IdUser}");
 
-            return response.IsSuccessStatusCode ? "suppression Bien Fait" : "Erreur dans la suppression";
+                    if(response.IsSuccessStatusCode){
+                        return "suppression Bien Fait";
+                    }
+                    else{
+                        if((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                             string responseBody = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Error Response Body: {responseBody}");
+                            return "Erreur dans la suppression";
+                        }
+                        else{
+                             string responseBody = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"Error Response Body: {responseBody}");
+                            return "Erreur Connection";
+                        }
+                    }
+                }
+                catch(Exception ex){
+                    Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                    return "Erreur Connection";
+
+                }
+                
+            }
+            else{
+                return "Erreur Connection";
+            }
         }
     }
 }

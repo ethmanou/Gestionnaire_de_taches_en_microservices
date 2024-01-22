@@ -15,7 +15,8 @@ namespace Front.Services
 
         public CustomAuthenticationStateProvider(ProtectedLocalStorage protectedSessionStorage)
         {
-            _sessionStorage = protectedSessionStorage;
+            _sessionStorage = protectedSessionStorage ?? throw new ArgumentNullException(nameof(protectedSessionStorage));
+
         }
 
         public async Task<ClaimsPrincipal> MarkUserAsAuthenticated(UserDTO user)

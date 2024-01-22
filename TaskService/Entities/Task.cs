@@ -5,20 +5,20 @@ namespace TaskService.Entities
 {
     public class Tasks
     {
-        public int Id { get; set; }
+        public  int Id { get; set; }
 
-        public string Text { get; set; }
+        public required string Text { get; set; }
 
-        public bool IsDone { get; set; }
+        public required bool IsDone { get; set; }
 
-        public int IdUser  {get; set; }
+        public required int IdUser  {get; set; }
 
     }
     public class TaskCreate
     {
-        public string Text { get; set; }
-        public bool IsDone { get; set; }
-        public int IdUser  {get; set;}
+        public required string Text { get; set; }
+        public required bool IsDone { get; set; }
+        public required int IdUser  {get; set;}
 
     }
 }

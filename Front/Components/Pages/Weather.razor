@@ -1,5 +1,7 @@
 ﻿@page "/weather"
 @attribute [StreamRendering]
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
 
 <PageTitle>Weather</PageTitle>
 
@@ -41,6 +43,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated || !user.IsInRole("admin"))
+        {
+            // L'utilisateur n'est pas authentifié ou n'a pas le rôle requis, rediriger vers la page de connexion ou une autre page.
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        
         // Simulate asynchronous loading to demonstrate streaming rendering
         await Task.Delay(500);
 

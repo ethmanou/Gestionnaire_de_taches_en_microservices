@@ -68,6 +68,25 @@ namespace Front.Entities
         }
     }
 
+
+    public class ErrorDetails
+    {
+        public Dictionary<string, List<string>> Name { get; set; }
+        
+    }
+    
+    public class ErrorResponse
+    {
+        public string Type { get; set; }
+        public string Title { get; set; }
+        public int Status { get; set; }
+        public ErrorDetails Errors { get; set; }
+        public string TraceId { get; set; }
+    }
+
+    
+
+
     
 
 

@@ -18,14 +18,14 @@ namespace UserService.Entities
     }
     public class UserCreateModel
     {
-        [Alphanumeric(ErrorMessage = "Password doit être alphanumérique.")]
-        public required string? Password { get; set; }
+        
+        public required string Password { get; set; }
 
-        [Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
-        public required string? Name { get; set; }
+        [Alphanumeric(ErrorMessage = "username doit être alphanumérique.")]
+        public required string Name { get; set; }
 
         [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
-        public required string? Email { get; set; }
+        public required string Email { get; set; }
     }
 
     public class TaskModel

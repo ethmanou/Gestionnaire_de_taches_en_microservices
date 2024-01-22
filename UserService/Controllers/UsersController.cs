@@ -109,9 +109,10 @@ namespace UserService.Controllers
                         Email = userPayload.Email,
                         Name = userPayload.Name,
                         role = userPayload.role,
+                        PasswordHash = _passwordHasher.HashPassword(user, userPayload.Password),
                     };
 
-                user.PasswordHash = _passwordHasher.HashPassword(user, userPayload.Password);
+                //user.PasswordHash = _passwordHasher.HashPassword(user, userPayload.Password);
 
                 _context.User.Add(user);
                 await _context.SaveChangesAsync();

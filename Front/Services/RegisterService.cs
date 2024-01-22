@@ -8,6 +8,10 @@ using System.Text;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Front.Services ; 
+using System.Text.Json.Serialization;
+using System.Text.Json;
+
+
 
 namespace Front.Services
 {
@@ -18,7 +22,7 @@ namespace Front.Services
         // Utilisez un constructeur avec une injection de dépendances pour initialiser HttpClient
         public RegisterService(HttpClient httpClient)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         
@@ -45,6 +49,27 @@ namespace Front.Services
                         if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
                             string responseBody = await response.Content.ReadAsStringAsync();
                             Console.WriteLine($"Error Response Body: {responseBody}");
+
+                            JsonDocument jsonDocument = JsonDocument.Parse(responseBody);
+
+                            // Accédez aux propriétés du document JSON
+                            JsonElement root = jsonDocument.RootElement;
+                            JsonElement errorsElement = root.GetProperty("errors");
+
+                             // Enumérez les propriétés sous la propriété "errors"
+                            foreach (JsonProperty property in errorsElement.EnumerateObject())
+                            {
+                                string propertyName = property.Name;
+                                JsonElement propertyValue = property.Value;
+
+                                string nameErrorsString = propertyValue.ToString();
+
+                                Console.WriteLine($"Property Name: {propertyName} : {nameErrorsString}");
+
+                                
+
+                            }
+
                             return "not fait";
                         }
                         else{
@@ -55,7 +80,7 @@ namespace Front.Services
             }
             catch (HttpRequestException ex)
             {
-                //Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
                 return "inregoinable";
             }
         

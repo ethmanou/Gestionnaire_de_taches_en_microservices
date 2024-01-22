@@ -8,7 +8,7 @@
 @inherits Microsoft.AspNetCore.Components.ComponentBase
 @inject IJSRuntime JSRuntime
 
-@attribute [Authorize(Roles = "admin")]
+
 <h3>Liste des tâches</h3>
 
 
@@ -98,6 +98,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated || !user.IsInRole("admin"))
+        {
+            // L'utilisateur n'est pas authentifié ou n'a pas le rôle requis, rediriger vers la page de connexion ou une autre page.
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
         tasks = await TaskService.GetAllTasksAsync();
         table_updated = new bool[tasks.Count+1] ;
         for(int i=0 ; i<tasks.Count ; i++){

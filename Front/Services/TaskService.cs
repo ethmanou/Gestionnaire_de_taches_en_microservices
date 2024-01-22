@@ -17,8 +17,8 @@ public class TaskService
 
     public TaskService(HttpClient httpClient, ProtectedLocalStorage sessionStorage)
     {
-        _httpClient = httpClient;
-        _sessionStorage = sessionStorage;
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _sessionStorage = sessionStorage ?? throw new ArgumentNullException(nameof(sessionStorage));
     }
 
     public async Task<List<TaskModel>> GetTasksAsync()

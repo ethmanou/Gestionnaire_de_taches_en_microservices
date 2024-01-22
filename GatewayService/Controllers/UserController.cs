@@ -74,7 +74,7 @@ namespace GatewayService.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserCreateModel model)
         {
-            var user = new { Name = model.Name, Password = model.Password , Email =model.Email , role = "basic"};
+            var user = new { Name = model.Name, Email =model.Email , Password = model.Password ,  role = "basic"};
             // Create an HttpClient instance using the factory
             using (var client = _httpClientFactory.CreateClient())
             {
@@ -88,7 +88,6 @@ namespace GatewayService.Controllers
                 // Check if the response status code is 201 (Created)
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    // You can deserialize the response content here if needed
                     return Ok();
                 }
                 else
@@ -116,7 +115,7 @@ namespace GatewayService.Controllers
                 // Check if the response status code is 201 (Created)
                 if (response != null)
                 {
-                    // You can deserialize the response content here if needed
+                    
                     //var result = await response.Content.ReadFromJsonAsync<List<TaskModel>>();
                     return Ok(response);
 
