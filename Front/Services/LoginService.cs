@@ -74,8 +74,37 @@ namespace Front.Services
             if (jwt.Success && jwt.Value != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt.Value);
+                try{
+                    HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/User/Users");
+                     if (response.IsSuccessStatusCode)
+                        {
+                            
+                            var users = await response.Content.ReadFromJsonAsync<List<UserDTO>>();
+                            return users;
+                            
+                        }
+                        else
+                        {
+                            if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                                    return  new List<UserDTO>();
+                                }
+                                else{
+                                    Console.WriteLine($"Erreur HTTP : {response.StatusCode} - {response.ReasonPhrase}");
+                                    return  null;
+                                }
+                            
+                            return null;
+                        }
+   
+                }
+                catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return null;
+                }
             }
-            return await _httpClient.GetFromJsonAsync<List<UserDTO>>("http://localhost:5000/api/User/Users") ?? new List<UserDTO>();
+            else{
+                return  new List<UserDTO>();
+            }
         }
 
         public async Task<string> UpdateUserAsync(int IdUser, UserDTO user)

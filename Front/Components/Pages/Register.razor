@@ -4,65 +4,105 @@
 @inject RegisterService RegisterService
 @inject AuthenticationStateProvider authStateProvider
 @using Front.Entities
+@using System.Text.Json; 
 <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
     <DataAnnotationsValidator />
-    
 
     <label for="Name">UserName</label>
     <InputText @bind-Value="registerModel.Name" id="Name" />
     <div class="error-message">
-    <!--<ValidationMessage For="@(() => registerModel.Name)" />!-->
+        @if (Register_errors.ContainsKey(nameof(registerModel.Name)))
+        {
+            <p style="color: red;">@Register_errors[nameof(registerModel.Name)]</p>
+        }
     </div>
 
     <label for="Pass">password</label>
-    <InputText @bind-Value="registerModel.Pass" type="password" id="Pass" />
-    <div class="error-message">
-    
+    <InputText @bind-Value="registerModel.Password" type="password" id="Pass" @oninput="CheckPasswordRules"/>
+    <div class="password-rules">
+        @if(!passwordRules.All(r => r.IsSatisfied)){
+            @foreach (var rule in passwordRules)
+            {
+                <div style="color: @(rule.IsSatisfied  ? "green" : "red");">
+                    @rule.Description
+                </div>
+            }
+        }
+    </div>
+    <div>
+        @if (Register_errors.ContainsKey(nameof(registerModel.Password)))
+        {
+            <p style="color: red;">@Register_errors[nameof(registerModel.Password)]</p>
+        }
     </div>
 
     <label for="Email">E-mail:</label>
-    <InputText @bind-Value="registerModel.Email" type="email" id="Email" />
+    <InputText @bind-Value="registerModel.Email" id="Email" />
     <div class="error-message">
+        @if (Register_errors.ContainsKey(nameof(registerModel.Email)))
+        {
+            <p style="color: red;">@Register_errors[nameof(registerModel.Email)]</p>
+        }
     </div>
 
     <ValidationSummary />
 
-    <button type="submit">Register</button>
+     <button type="submit" disabled="@disableSubmitButton">Register</button>
 </EditForm>
+
+
 
 @code {
     private RegisterModel registerModel = new RegisterModel();
+    private Dictionary<string, string> Register_errors = new Dictionary<string, string>();
+    private bool disableSubmitButton = true;
 
-
-    private async void HandleRegister()
+    private List<PasswordRule> passwordRules = new List<PasswordRule>
     {
-        var user = await RegisterService.RegisterUser(registerModel.Name, registerModel.Pass , registerModel.Email);
-        if (user == "Bien fait")
+        new PasswordRule { Description = "Au moins 8 caractères", IsSatisfied = false },
+        new PasswordRule { Description = "Au moins une majuscule", IsSatisfied = false },
+        new PasswordRule { Description = "Au moins une minuscule", IsSatisfied = false },
+        new PasswordRule { Description = "Au moins un chiffre", IsSatisfied = false },
+        new PasswordRule { Description = "Au moins un caractère spécial", IsSatisfied = false },
+    };
+
+    private void CheckPasswordRules(ChangeEventArgs args)
+    {
+        string password = args.Value?.ToString() ?? "";
+        passwordRules[0].IsSatisfied = password.Length >= 8;
+        passwordRules[1].IsSatisfied = password.Any(char.IsUpper);
+        passwordRules[2].IsSatisfied = password.Any(char.IsLower);
+        passwordRules[3].IsSatisfied = password.Any(char.IsDigit);
+        passwordRules[4].IsSatisfied = password.Any(ch => !char.IsLetterOrDigit(ch));
+
+        disableSubmitButton =  !passwordRules.All(r => r.IsSatisfied);
+    }
+
+
+    private async Task HandleRegister()
+    {
+        var result = await RegisterService.RegisterUser(registerModel.Name, registerModel.Password , registerModel.Email );
+        Register_errors = result.Errors;
+        if (result.Message == "Bien fait")
         {
             
             NavigationManager.NavigateTo("/register_success");
         }
         else
         {
-            if(user == "not fait"){
+            if(result.Message == "not fait"){
                 NavigationManager.NavigateTo("/register_faild");
             }
             else{
-                //NavigationManager.NavigateTo("/error");
+                if(result.Message == "inregoinable"){
+                     NavigationManager.NavigateTo("/error");
+                }
+               
+                
             }
 
         }
     }
 
-    private class RegisterModel
-    {
-        //[Alphanumeric(ErrorMessage = "Username doit être alphanumérique.")]
-        public string Name { get; set; } = "";
-
-        
-        public string Pass { get; set; } = "";
-
-        [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
-        public string Email { get; set; } = "";
-    }
+    
 }

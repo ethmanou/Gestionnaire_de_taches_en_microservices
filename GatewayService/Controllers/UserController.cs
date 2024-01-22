@@ -429,12 +429,12 @@ namespace GatewayService.Controllers
                 };
 
                 // On créer la clé de chiffrement
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSecretKeyLongLongLongLongEnough"));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySecretCesTMoiEthmaNouMohaMeDeNeLeMeiLLeUreQuEvOuSaLLeZreNcoNTrEZ"));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 // On paramètre notre token
                 var token = new JwtSecurityToken(
-                    issuer: "TodoProject", // Qui a émit le token
+                    issuer: "GatwayService", // Qui a émit le token
                     audience: "localhost:5000", // A qui est destiné ce token
                     claims: claims, // Les données que l'on veux encoder dans le token
                     expires: DateTime.Now.AddMinutes(3000), // Durée de validité

@@ -79,7 +79,7 @@
     private bool[] table_deleted;
     private bool[] table_updated;
 
-    private List<UserDTO> users;
+    private List<UserDTO>? users;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,14 +94,17 @@
         }
 
         users = await LoginService.GetAllUsersAsync();
-        table_updated = new bool[users.Count+1] ;
-        for(int i=0 ; i<users.Count ; i++){
-            table_updated[i] = true;
+        if(users != null){
+            table_updated = new bool[users.Count+1] ;
+            for(int i=0 ; i<users.Count ; i++){
+                table_updated[i] = true;
+            }
+            table_deleted = new bool[users.Count+1] ;
+            for(int i=0 ; i<users.Count ; i++){
+                table_deleted[i] = false;
+            }
         }
-        table_deleted = new bool[users.Count+1] ;
-        for(int i=0 ; i<users.Count ; i++){
-            table_deleted[i] = false;
-        }
+        
     }
 
 

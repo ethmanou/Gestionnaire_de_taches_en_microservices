@@ -4,6 +4,12 @@
     flex-direction: column;
 }
 
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
 main {
     flex: 1;
 }
@@ -102,3 +108,4 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+

@@ -18,7 +18,7 @@ namespace UserService.Entities
     }
     public class UserCreateModel
     {
-        
+        [IsPasswordStrong(ErrorMessage = "Password faible !.")]
         public required string Password { get; set; }
 
         [Alphanumeric(ErrorMessage = "username doit être alphanumérique.")]
@@ -71,6 +71,37 @@ namespace UserService.Entities
             return ValidationResult.Success;
         }
     }
+
+    
+    public class IsPasswordStrongAttribute : ValidationAttribute
+{
+    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    {
+        bool IsStrongPassword(string password)
+        {
+            // Votre logique de vérification de mot de passe fort ici
+            return password.Length >= 8 &&
+                   password.Any(char.IsUpper) &&
+                   password.Any(char.IsLower) &&
+                   password.Any(char.IsDigit) &&
+                   password.Any(ch => !char.IsLetterOrDigit(ch));
+        }
+
+        if (value != null)
+        {
+            string? inputValue = value.ToString();
+
+            // Utilisez une expression régulière pour vérifier que la chaîne ne contient que des caractères alphanumériques
+            if (!IsStrongPassword(inputValue))
+            {
+                return new ValidationResult(ErrorMessage ?? "Le mot de passe doit être fort.");
+            }
+        }
+
+        return ValidationResult.Success;
+    }
+}
+
 
 
 }

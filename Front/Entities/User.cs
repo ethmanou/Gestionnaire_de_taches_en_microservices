@@ -44,6 +44,18 @@ namespace Front.Entities
         public required string? token {get ; set ;}
     }
 
+    public class RegisterModel
+    {
+        [Alphanumeric(ErrorMessage = "username doit être alphanumérique.")]
+        public string Name { get; set; } = "";
+
+        
+        public string Password { get; set; } = "";
+
+        [EmailAddress(ErrorMessage = "E-mail n'est pas valide.")]
+        public string Email { get; set; } = "";
+    }
+
    
 
 
@@ -68,6 +80,8 @@ namespace Front.Entities
         }
     }
 
+    
+
 
     public class ErrorDetails
     {
@@ -84,11 +98,11 @@ namespace Front.Entities
         public string TraceId { get; set; }
     }
 
-    
-
-
-    
-
+    public class PasswordRule
+{
+    public string Description { get; set; }
+    public bool IsSatisfied { get; set; }
+}
 
 
 

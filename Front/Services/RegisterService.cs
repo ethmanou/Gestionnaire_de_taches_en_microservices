@@ -25,13 +25,21 @@ namespace Front.Services
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
+        public class RegistrationResult
+        {
+            public string Message { get; set; }
+            public Dictionary<string, string> Errors { get; set; }
+        }
+
         
-        public async Task<string> RegisterUser(string username, string password , string email)
+        public async Task<RegistrationResult> RegisterUser(string username, string password , string email )
         {
             
             string gatewayUrl = "http://localhost:5000/"; 
             string loginRoute = "api/User/register"; 
             string apiUrl = $"{gatewayUrl}{loginRoute}";
+            Dictionary<string, string> errors = new Dictionary<string, string>();
+            string message = "";
 
             // Construisez les données JSON pour la requête POST
             var postData = new { Name = username, Password = password , Email =email };
@@ -42,7 +50,7 @@ namespace Front.Services
 
                     if (response.IsSuccessStatusCode)
                     {
-                            return "Bien fait";
+                            message = "Bien fait";
                     }
                     else
                     {
@@ -50,30 +58,35 @@ namespace Front.Services
                             string responseBody = await response.Content.ReadAsStringAsync();
                             Console.WriteLine($"Error Response Body: {responseBody}");
 
-                            JsonDocument jsonDocument = JsonDocument.Parse(responseBody);
+                            if (responseBody.StartsWith("{")){
+                                JsonDocument jsonDocument = JsonDocument.Parse(responseBody);
 
-                            // Accédez aux propriétés du document JSON
-                            JsonElement root = jsonDocument.RootElement;
-                            JsonElement errorsElement = root.GetProperty("errors");
+                                // Accédez aux propriétés du document JSON
+                                JsonElement root = jsonDocument.RootElement;
+                                if (root.TryGetProperty("errors", out JsonElement errorsElement)){
+                                    // Enumérez les propriétés sous la propriété "errors"
+                                    foreach (JsonProperty property in errorsElement.EnumerateObject())
+                                    {
+                                        string propertyName = property.Name;
+                                        JsonElement propertyValue = property.Value;
 
-                             // Enumérez les propriétés sous la propriété "errors"
-                            foreach (JsonProperty property in errorsElement.EnumerateObject())
-                            {
-                                string propertyName = property.Name;
-                                JsonElement propertyValue = property.Value;
+                                        string nameErrorsString = propertyValue.ToString();
 
-                                string nameErrorsString = propertyValue.ToString();
+                                        errors[propertyName] = nameErrorsString;
 
-                                Console.WriteLine($"Property Name: {propertyName} : {nameErrorsString}");
-
-                                
-
+                                    }
+                                    message = "Erreur";
+                                }
+                                else{
+                                    message = "not fait";
+                                }
                             }
-
-                            return "not fait";
+                            else{
+                                message = "not fait";
+                            }
                         }
                         else{
-                            return "inregoinable";
+                            message = "inregoinable";
                         }
                         
                     }
@@ -81,12 +94,17 @@ namespace Front.Services
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"HTTP Request Exception: {ex.Message}");
-                return "inregoinable";
+                message = "inregoinable";
             }
         
-                
+            return new RegistrationResult
+            {
+            Message = message, // Ou tout autre résultat nécessaire
+            Errors = errors
+            };   
 
         }
+        
     }
 }
 

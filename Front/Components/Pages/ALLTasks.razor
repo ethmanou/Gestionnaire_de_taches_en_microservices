@@ -94,7 +94,7 @@
     private bool[] table_deleted;
     private bool[] table_updated;
 
-    private List<TaskModel> tasks;
+    private List<TaskModel>? tasks;
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,14 +109,17 @@
         }
 
         tasks = await TaskService.GetAllTasksAsync();
-        table_updated = new bool[tasks.Count+1] ;
-        for(int i=0 ; i<tasks.Count ; i++){
-            table_updated[i] = true;
+        if(tasks != null){
+            table_updated = new bool[tasks.Count+1] ;
+            for(int i=0 ; i<tasks.Count ; i++){
+                table_updated[i] = true;
+            }
+            table_deleted = new bool[tasks.Count+1] ;
+            for(int i=0 ; i<tasks.Count ; i++){
+                table_deleted[i] = false;
+            }
         }
-        table_deleted = new bool[tasks.Count+1] ;
-        for(int i=0 ; i<tasks.Count ; i++){
-            table_deleted[i] = false;
-        }
+        
     }
 
 
