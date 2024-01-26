@@ -41,7 +41,7 @@ namespace Front.Entities
 
 
 
-
+    //pour verifier username
     public class AlphanumericAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
@@ -80,10 +80,10 @@ namespace Front.Entities
     }
 
     public class PasswordRule
-{
-    public string Description { get; set; }
-    public bool IsSatisfied { get; set; }
-}
+    {
+        public string Description { get; set; }
+        public bool IsSatisfied { get; set; }
+    }
 
 
 

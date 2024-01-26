@@ -19,7 +19,8 @@
         <tr>
             <th>IDUser</th>
             <th>Description</th>
-            <th>Validation</th>
+            <th>Etat</th>
+            <th>DeadLine </th>
         </tr>
     </thead>
     <tbody>
@@ -50,14 +51,20 @@
                                 </span>
                             }
                         </td>
-                        <td style="color: @GetTimeColor(task.DeadLine)" > @GetTimeRemainingString(task.DeadLine - DateTime.Now , task)</td>
+                        if(!task.IsDone){
+                            <td style="color: @GetTimeColor(task.DeadLine)" > @GetTimeRemainingString(task.DeadLine - DateTime.Now , task)</td>
+                        }
+                        else{
+                            <td style="color: @GetTimeColorDone(task.DeadLine , task.DoneDate)" > @GetTimeRemainingString(task.DeadLine - DateTime.Now , task)</td>
+                        }
                     }
                     else{
                     <td>
                         <input @bind="@task.IdUser" disabled="@table_updated[index]" />
                         <input @bind="@task.Text" disabled="@table_updated[index]" />
                         <InputCheckbox @bind-Value="task.IsDone" disabled = "@table_updated[index]" />
-                        <input type="text" @bind="dateString" placeholder="yyyy-MM-dd HH:mm" />
+                        <input type="datetime-local" @bind="task.DeadLine" />
+
                     </td>
                     }
                     <td>
@@ -93,12 +100,15 @@
 </table>
 
 @code {
+    //tableau pour gerer la suppression de tasks
     private bool[] table_deleted;
+    //tableau pour gerer la modification de tasks
     private bool[] table_updated;
 
     private List<TaskModel>? tasks;
+    //pour afficher le DeadLine en temps réel
     private System.Timers.Timer updateTimer;
-    private string dateString = "" ;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,11 +168,8 @@
         table_updated[indx] = false;
     }
     private async Task HandleSave(TaskModel task , int indx){
-        if (DateTime.TryParse(dateString, out DateTime result))
-        {
-            var resultat = await TaskService.UpdateTaskAsyncAdmin(task.Id , task.Text , task.IsDone, task.IdUser , result);
-        }
-        
+        var resultat = await TaskService.UpdateTaskAsyncAdmin(task.Id , task.Text , task.IsDone, task.IdUser , task.DeadLine);
+    
         table_updated[indx] = true;
         await OnInitializedAsync();
     }
@@ -182,29 +189,37 @@
         if(!task.IsDone){
             if (difference.TotalSeconds < 0)
             {
-                result = $"en retard de : {-(int)difference.TotalDays} jours, {-difference.Hours} heures, {-difference.Minutes} minutes, {-difference.Seconds} secondes";
+                result += "En retard de  : ";
+                result += $"{(-difference.Days / 365 > 0 ? $"{-difference.Days / 365} années , " : "")} ";
+                result += $"{(-difference.Days % 365 > 29 ? $"{(-difference.Days % 365)/30 } mois , " : "")} ";
+                result += $" {(-difference.Days % 365)%30 } jours, {-difference.Hours} heures, {-difference.Minutes} minutes, {-difference.Seconds} secondes";
             }
             else
             {
-                result = $"{(int)difference.TotalDays} jours, {difference.Hours} heures, {difference.Minutes} minutes, {difference.Seconds} secondes";
+                result += "Il vous reste : ";
+                result += $"{(difference.Days / 365 > 0 ? $"{difference.Days / 365} années , " : "")} ";
+                result += $"{(difference.Days % 365 > 29 ? $"{(difference.Days % 365)/30 } mois , " : "")} ";
+                result += $" {(difference.Days % 365)%30 } jours, {difference.Hours} heures, {difference.Minutes} minutes, {difference.Seconds} secondes";
             }
         }
-
         else{
             if(task.DoneDate.HasValue){
                 TimeSpan difference1 = (TimeSpan)(task.DeadLine - task.DoneDate) ;
                 if(difference1.TotalSeconds < 0){
-                    result = $"fait en retard de :  {-(int)difference1.TotalDays} jours, {-difference1.Hours} heures, {-difference1.Minutes} minutes, {-difference1.Seconds} secondes";
+                    result += "Fait en retard de  : ";
+                    result += $"{(-difference1.Days / 365 > 0 ? $"{-difference1.Days / 365} années , " : "")} ";
+                    result += $"{(-difference1.Days % 365 > 29 ? $"{(-difference1.Days % 365)/30 } mois , " : "")} ";
+                    result += $" {(-difference1.Days % 365)%30 } jours, {-difference1.Hours} heures, {-difference1.Minutes} minutes, {-difference1.Seconds} secondes";
                 }
                 else{
-                    result = $"bravo c'est fait en avance :  {(int)difference1.TotalDays} jours, {difference1.Hours} heures, {difference1.Minutes} minutes, {difference1.Seconds} secondes";
+                    result += "bravo c'est fait en avance : ";
+                    result += $"{(difference1.Days / 365 > 0 ? $"{difference1.Days / 365} années , " : "")} ";
+                    result += $"{(difference1.Days % 365 > 29 ? $"{(difference1.Days % 365)/30 } mois , " : "")} ";
+                    result += $" {(difference1.Days % 365)%30 } jours, {difference1.Hours} heures, {difference1.Minutes} minutes, {difference1.Seconds} secondes";
                 }
             }
             
         }
-        
-
-        
 
         return result;
     }
@@ -229,6 +244,18 @@
             // Plus d'un jour restant
             return "green";
         }
+    }
+
+    private string GetTimeColorDone(DateTime deadline , DateTime? DoneDate) {
+        TimeSpan difference = deadline - (DateTime)DoneDate;
+
+        if (difference.TotalSeconds < -1) {
+            // Fait En retard d'une seconde
+            return "darkred";
+        } else {
+            //  fait à temps
+            return "blue";
+        } 
     }
 }
 

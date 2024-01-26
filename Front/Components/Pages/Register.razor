@@ -54,7 +54,10 @@
 
 @code {
     private RegisterModel registerModel = new RegisterModel();
+
+    //dictionnaire pour recuperer les exceptions de nom , pass , email depuis Gateway
     private Dictionary<string, string> Register_errors = new Dictionary<string, string>();
+    
     private bool disableSubmitButton = true;
 
     private List<PasswordRule> passwordRules = new List<PasswordRule>

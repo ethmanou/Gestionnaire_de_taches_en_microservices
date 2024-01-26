@@ -99,8 +99,8 @@ namespace Front.Services
         
             return new RegistrationResult
             {
-            Message = message, // Ou tout autre résultat nécessaire
-            Errors = errors
+                Message = message, 
+                Errors = errors
             };   
 
         }

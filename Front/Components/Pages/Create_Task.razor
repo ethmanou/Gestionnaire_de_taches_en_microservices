@@ -13,7 +13,7 @@
     <label for="istaskDone">Is Done:</label>
     <InputCheckbox id="isTaskDone" @bind-Value="task.IsDone" />
     <label for="DeadLine">DeadLine:</label>
-    <input type="text" @bind="task.DeadLine" placeholder="yyyy-MM-dd HH:mm" />
+    <input type="datetime-local" @bind="task.DeadLine" />
     <button type="submit">Create</button>
 </EditForm>
 
@@ -30,7 +30,7 @@
             <label for="istaskDone">Is Done:</label>
             <InputCheckbox id="isTaskADone" @bind-Value="taskA.IsDone" />
             <label for="DeadLine">DeadLine:</label>
-            <input type="text" @bind="task.DeadLine" placeholder="yyyy-MM-dd HH:mm" />
+            <input type="datetime-local" @bind="task.DeadLine" />
             <button type="submit">Create</button>
         </EditForm>
     </Authorized>
@@ -42,8 +42,11 @@
 
 
 @code {
-    private TaskCreate task = new TaskCreate();
-    private TaskCreate taskA = new TaskCreate();
+    
+    private TaskCreate task = new TaskCreate{ DeadLine = DateTime.Now };
+
+    //task pour le cas ou Admin veux creer une tache pour un autre user
+    private TaskCreate taskA = new TaskCreate{ DeadLine = DateTime.Now };
 
     protected override async Task OnInitializedAsync(){
         var authState = await authStateProvider.GetAuthenticationStateAsync();
@@ -61,26 +64,22 @@
 
     private async void HandleCreate()
     {
-        if (DateTime.TryParse(task.DeadLine, out DateTime result))
-        {
-            var user = await TaskService.CreateTask(task.Text , task.IsDone , result);
+        
+        var user = await TaskService.CreateTask(task.Text , task.IsDone , task.DeadLine);
             if (user != null)
             {
                 NavigationManager.NavigateTo("/Task_visual");
             }
-        }
     }
 
     private async void HandleCreateAdmin()
     {
-        if (DateTime.TryParse(task.DeadLine, out DateTime result))
-        {
-            var user = await TaskService.CreateTaskForUserByAdmin(taskA.Text , taskA.IsDone , (int)taskA.IdUser , result);
+        
+        var user = await TaskService.CreateTaskForUserByAdmin(taskA.Text , taskA.IsDone , (int)taskA.IdUser , task.DeadLine);
             if (user != null)
             {
                 NavigationManager.NavigateTo("/Task_visual");
             }
-        }
     }
 
     public class TaskCreate
@@ -88,7 +87,7 @@
         public string Text { get; set; }
         public bool IsDone { get; set; }
         public int? IdUser {get ; set ;}
-        public string DeadLine { get; set; }
+        public DateTime DeadLine { get; set; }
     }
 
 }
