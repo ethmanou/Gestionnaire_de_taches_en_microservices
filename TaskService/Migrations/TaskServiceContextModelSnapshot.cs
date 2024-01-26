@@ -30,6 +30,15 @@ namespace TaskService.Migrations
 
                     b.Property<int>("IdUser")
                         .HasColumnType("INTEGER");
+                    
+                    b.Property<DateTime>("DeadLine")
+                        .HasColumnType("DATETIME");
+
+                    b.Property<DateTime>("DoneDate")
+                        .HasColumnType("DATETIME");
+
+
+                    
 
 
                     b.HasKey("Id");

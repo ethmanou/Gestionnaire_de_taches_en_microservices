@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
 
 <AuthorizeView Roles="admin">
     <Authorized>
@@ -17,6 +19,18 @@
 
 @code {
     private int currentCount = 0;
+
+    protected override async Task OnInitializedAsync(){
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            // L'utilisateur n'est pas authentifié ou n'a pas le rôle requis, rediriger vers la page de connexion ou une autre page.
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+    }
 
     private void IncrementCount()
     {

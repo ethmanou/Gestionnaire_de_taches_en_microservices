@@ -1,6 +1,8 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider authStateProvider
+@inject IJSRuntime JSRuntime
+@inject KonamiService KonamiService
 
 <div class="page">
     <div class="sidebar">
@@ -18,7 +20,6 @@
                     <p>You're not connected.</p>
                 </NotAuthorized>
             </AuthorizeView>
-            
         </div>
 
         <article class="content px-4">
@@ -33,14 +34,46 @@
     <a class="dismiss">🗙</a>
 </div>
 
+<div tabindex="0" @onkeydown="HandleKeyDown" @onblur="HandleBlur"></div>
+
 @code {
+    private string keyBuffer = "";
+
+    protected override void OnInitialized()
+    {
+        KonamiService.KonamiCodeCompleted += HandleKonamiCodeCompleted;
+    }
+
+    private void HandleKonamiCodeCompleted()
+    {
+        Console.WriteLine("Konami Code réussi !");
+        // Ajoutez ici l'action que vous souhaitez effectuer
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        keyBuffer += e.Key;
+
+        if (keyBuffer.Length > KonamiService.konamiCode.Count)
+        {
+            keyBuffer = keyBuffer.Substring(1);
+        }
+
+        if (keyBuffer == string.Join("", KonamiService.konamiCode))
+        {
+            HandleKonamiCodeCompleted();
+            keyBuffer = "";
+        }
+    }
+
+    private void HandleBlur(FocusEventArgs e)
+    {
+        keyBuffer = "";
+    }
 
     private async void Logout()
     {
-        // Kill the session
-        await((CustomAuthenticationStateProvider)authStateProvider).Logout();
-        // Redirect the user to the login page
+        await ((CustomAuthenticationStateProvider)authStateProvider).Logout();
         NavigationManager.NavigateTo("/login");
-        
     }
 }

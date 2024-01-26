@@ -19,6 +19,8 @@ namespace TaskService.Migrations
                     Text = table.Column<string>(type: "TEXT", nullable: false),
                     IsDone = table.Column<bool>(type: "INTEGRE", nullable: false),
                     IdUser = table.Column<int>(type: "INTEGRE", nullable: false),
+                    DeadLine = table.Column<DateTime>(type:"DATETIME" , nullable:false),
+                    DoneDate = table.Column<DateTime>(type:"DATETIME" , nullable:true),
                 },
                 constraints: table =>
                 {

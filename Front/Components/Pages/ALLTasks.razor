@@ -50,12 +50,14 @@
                                 </span>
                             }
                         </td>
+                        <td style="color: @GetTimeColor(task.DeadLine)" > @GetTimeRemainingString(task.DeadLine - DateTime.Now , task)</td>
                     }
                     else{
                     <td>
                         <input @bind="@task.IdUser" disabled="@table_updated[index]" />
                         <input @bind="@task.Text" disabled="@table_updated[index]" />
                         <InputCheckbox @bind-Value="task.IsDone" disabled = "@table_updated[index]" />
+                        <input type="text" @bind="dateString" placeholder="yyyy-MM-dd HH:mm" />
                     </td>
                     }
                     <td>
@@ -95,6 +97,8 @@
     private bool[] table_updated;
 
     private List<TaskModel>? tasks;
+    private System.Timers.Timer updateTimer;
+    private string dateString = "" ;
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,6 +123,11 @@
                 table_deleted[i] = false;
             }
         }
+
+        updateTimer = new System.Timers.Timer(1000);
+        updateTimer.Elapsed += async (sender, e) => await OnUpdateTimerElapsed();
+        updateTimer.AutoReset = true;
+        updateTimer.Start();
         
     }
 
@@ -139,7 +148,7 @@
     {
         
         var resultat = await TaskService.DeleteTaskAsyncAdmin(id);
-        tasks = await TaskService.GetAllTasksAsync();
+        await OnInitializedAsync();
 
         
 
@@ -149,8 +158,77 @@
         table_updated[indx] = false;
     }
     private async Task HandleSave(TaskModel task , int indx){
-        var resultat = await TaskService.UpdateTaskAsyncAdmin(task.Id , task.Text , task.IsDone, task.IdUser);
+        if (DateTime.TryParse(dateString, out DateTime result))
+        {
+            var resultat = await TaskService.UpdateTaskAsyncAdmin(task.Id , task.Text , task.IsDone, task.IdUser , result);
+        }
+        
         table_updated[indx] = true;
+        await OnInitializedAsync();
+    }
+
+
+
+
+
+
+
+
+
+    public static string GetTimeRemainingString(TimeSpan difference , TaskModel task)
+    {
+        string result = "";
+
+        if(!task.IsDone){
+            if (difference.TotalSeconds < 0)
+            {
+                result = $"en retard de : {-(int)difference.TotalDays} jours, {-difference.Hours} heures, {-difference.Minutes} minutes, {-difference.Seconds} secondes";
+            }
+            else
+            {
+                result = $"{(int)difference.TotalDays} jours, {difference.Hours} heures, {difference.Minutes} minutes, {difference.Seconds} secondes";
+            }
+        }
+
+        else{
+            if(task.DoneDate.HasValue){
+                TimeSpan difference1 = (TimeSpan)(task.DeadLine - task.DoneDate) ;
+                if(difference1.TotalSeconds < 0){
+                    result = $"fait en retard de :  {-(int)difference1.TotalDays} jours, {-difference1.Hours} heures, {-difference1.Minutes} minutes, {-difference1.Seconds} secondes";
+                }
+                else{
+                    result = $"bravo c'est fait en avance :  {(int)difference1.TotalDays} jours, {difference1.Hours} heures, {difference1.Minutes} minutes, {difference1.Seconds} secondes";
+                }
+            }
+            
+        }
+        
+
+        
+
+        return result;
+    }
+
+
+    private async Task OnUpdateTimerElapsed()
+    {
+        
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private string GetTimeColor(DateTime deadline) {
+        TimeSpan difference = deadline - DateTime.Now;
+
+        if (difference.TotalSeconds < 0) {
+            // La DeadLine est dépassée
+            return "red";
+        } else if (difference.TotalDays < 1) {
+            // Moins d'un jour restant
+            return "orange";
+        } else {
+            // Plus d'un jour restant
+            return "green";
+        }
     }
 }
 

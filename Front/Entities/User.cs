@@ -18,25 +18,6 @@ namespace Front.Entities
         public required string? Name { get; set; }
         public required string? Email { get; set; }
     }
-    // TaskModel
-    public class TaskModel
-    {
-        public int Id { get; set; }
-
-        public  required string? Text { get; set; }
-
-        public required bool IsDone { get; set; }
-
-        public int IdUser  { get; set; }
-
-    }
-
-    public class TaskCreate
-    {
-        public required string? Text { get; set; }
-        public required bool IsDone { get; set; }
-        public int IdUser  { get; set; }
-    }
     
     public class response_t
     {
@@ -106,5 +87,11 @@ namespace Front.Entities
 
 
 
+
+        public interface IKonamiCodeHandler
+        {
+            event Action KonamiCodeCompleted;
+            void HandleKeyPress(string key);
+        }
 
 }

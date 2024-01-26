@@ -60,15 +60,23 @@ namespace TaskService.Controllers
                 Text = task.Text,
                 IsDone = task.IsDone,
                 IdUser = iduser ,
+                DeadLine = task.DeadLine ,
             };
+
+            if(task.IsDone){
+                newTask.DoneDate = DateTime.Now ;
+            }
+            else{
+                newTask.DoneDate = null ;
+            }
 
             
 
             _context.Tasks.Add(newTask);
             await _context.SaveChangesAsync();
 
-            // Return a 201 Created response with the newly created task
-            return Created();
+            // Return a 200 Created response with the newly created task
+            return Ok(newTask);
         }
 
         // PUT api/Tasks/5
@@ -83,9 +91,17 @@ namespace TaskService.Controllers
                     return NotFound();
                 }
 
+                if((!task.IsDone) && (taskUpdate.IsDone)){
+                    task.DoneDate = DateTime.Now ;
+                }
+
                 task.Text = taskUpdate.Text;
                 task.IsDone = taskUpdate.IsDone;
                 task.IdUser = iduser;
+                task.DeadLine = taskUpdate.DeadLine;
+
+
+               
 
                 await _context.SaveChangesAsync();
 
@@ -99,9 +115,16 @@ namespace TaskService.Controllers
                     return NotFound();
                 }
 
+                if((!task.IsDone) && (taskUpdate.IsDone)){
+                    task.DoneDate = DateTime.Now ;
+                }
+
                 task.Text = taskUpdate.Text;
                 task.IsDone = taskUpdate.IsDone;
                 task.IdUser = taskUpdate.IdUser;
+                task.DeadLine = taskUpdate.DeadLine;
+                
+
 
                 await _context.SaveChangesAsync();
 

@@ -32,7 +32,7 @@ public class TaskService
             
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/User/tasks/{idUserResult.Value}");
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/Task/tasks/{idUserResult.Value}");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -75,7 +75,7 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
              try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/User/tasks");
+                HttpResponseMessage response = await _httpClient.GetAsync($"http://localhost:5000/api/Task/tasks");
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -108,7 +108,7 @@ public class TaskService
         }
     }
 
-    public async Task<string> CreateTask(string text, bool valid)
+    public async Task<string> CreateTask(string text, bool valid , DateTime DeadLine)
     {
         var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
         var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
@@ -118,9 +118,54 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
 
             string gatewayUrl = "http://localhost:5000/";
-            string loginRoute = $"api/User/task/{idUserResult.Value}";
+            string loginRoute = $"api/Task/task/{idUserResult.Value}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
-            var postData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
+            var postData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value , DeadLine = DeadLine , DoneDate = DeadLine};
+
+            try{
+                HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
+
+                if(response.IsSuccessStatusCode){
+                        return   "Création Bien Fait";
+                    }else{
+                        
+                        if ((int) response.StatusCode >= 400 && (int)response.StatusCode < 500){
+                            return  "Erreur dans la Création";
+                        }
+                        else{
+                            return  "Erreur de Connexion";
+                        }
+
+                    }
+            }
+            catch(Exception ex){
+                Console.WriteLine($"HTTP Request Exception: {ex.Message}");
+                return  "Erreur de Connexion";
+            }
+            
+
+            
+        }
+        else
+        {
+            return   "Erreur de Connexion";
+            Console.WriteLine("je suis la");
+        }
+    }
+
+    public async Task<string> CreateTaskForUserByAdmin(string text, bool valid , int IdUser , DateTime DeadLine)
+    {
+        var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
+        var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
+
+        if (jwtResult.Success && jwtResult.Value != null && idUserResult.Success)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
+
+            string gatewayUrl = "http://localhost:5000/";
+            string loginRoute = $"api/Task/task/{IdUser}";
+            string apiUrl = $"{gatewayUrl}{loginRoute}";
+            var postData = new { Text = text, IsDone = valid, IdUser = IdUser  , DeadLine = DeadLine , DoneDate = DeadLine};
 
             try{
                 HttpResponseMessage response = await _httpClient.PostAsJsonAsync(apiUrl, postData);
@@ -162,7 +207,7 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
 
             string gatewayUrl = "http://localhost:5000/";
-            string loginRoute = $"api/User/task/{idUserResult.Value}/{id}";
+            string loginRoute = $"api/Task/task/{idUserResult.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
             try{
@@ -204,7 +249,7 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
 
             string gatewayUrl = "http://localhost:5000/";
-            string loginRoute = $"api/User/task/{id}";
+            string loginRoute = $"api/Task/task/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
             try{
                     HttpResponseMessage response = await _httpClient.DeleteAsync(apiUrl);
@@ -234,7 +279,7 @@ public class TaskService
         }
     }
 
-    public async Task<string> UpdateTaskAsync(int id, string text, bool valid)
+    public async Task<string> UpdateTaskAsync(int id, string text, bool valid , DateTime DeadLine)
     {
         var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
         var idUserResult = await _sessionStorage.GetAsync<int>("IdUser");
@@ -244,10 +289,10 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
 
             string gatewayUrl = "http://localhost:5000/";
-            string loginRoute = $"api/User/task/{idUserResult.Value}/{id}";
+            string loginRoute = $"api/Task/task/{idUserResult.Value}/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
-            var putData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value };
+            var putData = new { Text = text, IsDone = valid, IdUser = idUserResult.Value , DeadLine = DeadLine , DoneDate = DeadLine  };
 
             try{
                 HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);
@@ -276,7 +321,7 @@ public class TaskService
         }
     }
 
-    public async Task<string> UpdateTaskAsyncAdmin(int id, string text, bool valid , int IdUser)
+    public async Task<string> UpdateTaskAsyncAdmin(int id, string text, bool valid , int IdUser , DateTime DeadLine)
     {
         var jwtResult = await _sessionStorage.GetAsync<string>("jwt");
 
@@ -285,10 +330,10 @@ public class TaskService
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtResult.Value);
 
             string gatewayUrl = "http://localhost:5000/";
-            string loginRoute = $"api/User/task/{id}";
+            string loginRoute = $"api/Task/task/{id}";
             string apiUrl = $"{gatewayUrl}{loginRoute}";
 
-            var putData = new { Text = text, IsDone = valid, IdUser = IdUser };
+            var putData = new { Text = text, IsDone = valid, IdUser = IdUser , DeadLine = DeadLine , DoneDate = DeadLine };
 
             try{
                 HttpResponseMessage response = await _httpClient.PutAsJsonAsync(apiUrl, putData);

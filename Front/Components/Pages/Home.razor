@@ -1,19 +1,30 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider authStateProvider
 
 <PageTitle>Home</PageTitle>
+<AuthorizeView>
+    <h2>Hello, @context.User.Identity.Name !</h2>    
+</AuthorizeView>
 
-
-
-<h1>Hello, world!</h1>
 
 bienvenu dans votre application 
-<div class="page2">
-pour aller vers la page de taches  
-<NavLink href="/Task_visual" > ici</NavLink> 
-</div>
+<p> &nbsp;</p>
 
-<div class="page2">
-pour Aller vers la page de creation de taches  
-<NavLink href="/Create_Task" >ici</NavLink>    
-</div>
+pour alller vers une page click droite sur laquelle
 
+
+
+@code{
+    protected override async Task OnInitializedAsync(){
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            // L'utilisateur n'est pas authentifié ou n'a pas le rôle requis, rediriger vers la page de connexion ou une autre page.
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+    }
+}

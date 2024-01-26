@@ -20,9 +20,9 @@ builder.Services
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidAudience = "localhost:5000",
-            ValidIssuer = "TodoProject",
+            ValidIssuer = "GatwayService",
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("YourSecretKeyLongLongLongLongEnough"))
+                Encoding.UTF8.GetBytes("MySecretC'esTqUe:EthmaNou_MohaMeDeNe_C'EsT_Le_MeiLLeUre_QuE_vOus_AllEz_rEnCoNtReZ_DanS_VoTrE_ViE_Je_RiGole!_MinCe!_nOn_C'esT_VraI"))
         };
     });
 

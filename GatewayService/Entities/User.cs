@@ -28,24 +28,7 @@ namespace UserService.Entities
         public required string Email { get; set; }
     }
 
-    public class TaskModel
-    {
-        public int Id { get; set; }
-
-        public  string? Text { get; set; }
-
-        public bool? IsDone { get; set; }
-
-        public int? IdUser {get; set; }
-
-    }
-
-    public class TaskCreate
-    {
-        public string? Text { get; set; }
-        public bool? IsDone { get; set; }
-        public int? IdUser  { get; set; }
-    }
+    
     public class response_t
     {
         public UserDTO? user {get; set; } 

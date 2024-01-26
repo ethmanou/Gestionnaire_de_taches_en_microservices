@@ -36,6 +36,14 @@ namespace TaskService.Migrations
                     b.Property<int>("IdUser")
                         .IsRequired()
                         .HasColumnType("INTEGER");
+                    
+                    b.Property<DateTime>("DeadLine")
+                        .IsRequired()
+                        .HasColumnType("DATETIME");
+                    
+                    b.Property<DateTime>("DoneDate")
+                        .IsRequired()
+                        .HasColumnType("DATETIME");
 
                     
 

@@ -7,29 +7,79 @@
 @inject TaskService TaskService
 
 <EditForm Model="@task" OnValidSubmit="HandleCreate">
+    <h2> &nbsp;</h2>
+    <label for="Description">Description</label>
     <InputText @bind-Value="task.Text" />
-     <label for="isDone">Is Done:</label>
-    <InputCheckbox id="isDone" @bind-Value="task.IsDone" />
+    <label for="istaskDone">Is Done:</label>
+    <InputCheckbox id="isTaskDone" @bind-Value="task.IsDone" />
+    <label for="DeadLine">DeadLine:</label>
+    <input type="text" @bind="task.DeadLine" placeholder="yyyy-MM-dd HH:mm" />
     <button type="submit">Create</button>
 </EditForm>
+
+<AuthorizeView Context="Auth" Roles="admin">
+    <Authorized>
+        <EditForm Model="@task" OnValidSubmit="HandleCreateAdmin">
+            <h2>&nbsp;</h2>
+            <h3>Créer une tache pour autre utilisateur</h3>
+            <h2>&nbsp;</h2>
+            <label for="idUser">IdUser</label>
+            <input @bind="@taskA.IdUser" />
+            <label for="Text">Description</label>
+            <InputText @bind-Value="taskA.Text" />
+            <label for="istaskDone">Is Done:</label>
+            <InputCheckbox id="isTaskADone" @bind-Value="taskA.IsDone" />
+            <label for="DeadLine">DeadLine:</label>
+            <input type="text" @bind="task.DeadLine" placeholder="yyyy-MM-dd HH:mm" />
+            <button type="submit">Create</button>
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
 
 
 
 
 @code {
     private TaskCreate task = new TaskCreate();
+    private TaskCreate taskA = new TaskCreate();
 
+    protected override async Task OnInitializedAsync(){
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-     private async void HandleCreate()
-    {
-        var user = await TaskService.CreateTask(task.Text , task.IsDone);
-        if (user != null)
+        if (!user.Identity.IsAuthenticated)
         {
-            NavigationManager.NavigateTo("/Task_visual");
+            // L'utilisateur n'est pas authentifié ou n'a pas le rôle requis, rediriger vers la page de connexion ou une autre page.
+            NavigationManager.NavigateTo("/login");
+            return;
         }
-        else
+    }
+
+
+
+    private async void HandleCreate()
+    {
+        if (DateTime.TryParse(task.DeadLine, out DateTime result))
         {
-            NavigationManager.NavigateTo("/Error");
+            var user = await TaskService.CreateTask(task.Text , task.IsDone , result);
+            if (user != null)
+            {
+                NavigationManager.NavigateTo("/Task_visual");
+            }
+        }
+    }
+
+    private async void HandleCreateAdmin()
+    {
+        if (DateTime.TryParse(task.DeadLine, out DateTime result))
+        {
+            var user = await TaskService.CreateTaskForUserByAdmin(taskA.Text , taskA.IsDone , (int)taskA.IdUser , result);
+            if (user != null)
+            {
+                NavigationManager.NavigateTo("/Task_visual");
+            }
         }
     }
 
@@ -37,6 +87,8 @@
     {
         public string Text { get; set; }
         public bool IsDone { get; set; }
+        public int? IdUser {get ; set ;}
+        public string DeadLine { get; set; }
     }
 
 }

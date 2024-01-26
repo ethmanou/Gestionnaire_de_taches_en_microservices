@@ -1,5 +1,6 @@
 using Front.Components;
 using Front.Services;
+using Front.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -59,6 +60,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<RegisterService>();
 builder.Services.AddScoped<TaskService>();
+builder.Services.AddSingleton<KonamiService>();
+builder.Services.AddSingleton<IKonamiCodeHandler ,KonamiService>();
 
 
 var app = builder.Build();
