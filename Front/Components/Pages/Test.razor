@@ -1,0 +1,44 @@
+@page "/Test"
+
+<button @onclick="StartSpeechRecognition">Start Speech Recognition</button>
+
+@code {
+    private string recognizedText;
+
+    private async Task StartSpeechRecognition()
+    {
+        // Vérifie si l'API SpeechRecognition est prise en charge par le navigateur
+        var isMicrophoneSupported = await CheckMicrophoneSupport();
+
+        if (isMicrophoneSupported)
+        {
+            // Votre implémentation de la reconnaissance vocale ici
+            // ...
+
+            // Simuler une réponse
+            var result = true; // Vous pouvez changer cette valeur en fonction de votre logique
+
+            // Traiter la réponse
+            HandleSpeechRecognition(result);
+        }
+        else
+        {
+            // Gérer le cas où la reconnaissance vocale n'est pas prise en charge
+            Console.WriteLine("La reconnaissance vocale n'est pas prise en charge dans ce navigateur.");
+        }
+    }
+
+    private async Task<bool> CheckMicrophoneSupport()
+    {
+        // Implémentez votre logique pour vérifier la prise en charge du microphone ici
+        // Retournez true si pris en charge, false sinon
+        return true;
+    }
+
+    private void HandleSpeechRecognition(bool result)
+    {
+        // Gérer le résultat
+        recognizedText = result ? "Speech recognized!" : "Speech not recognized!";
+        Console.WriteLine(recognizedText);
+    }
+}
